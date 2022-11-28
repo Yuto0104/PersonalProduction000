@@ -1,0 +1,29 @@
+// モデルの最大数
+MAX_TYPE = 22
+
+//***************************
+// Xファイル名の読み込み
+//***************************
+MODEL_FILENAME = data/MODEL/airplane000.x              	# [0]
+MODEL_FILENAME = data/MODEL/player000/00_body.x			# [1]
+MODEL_FILENAME = data/MODEL/player000/01_head.x			# [2]
+MODEL_FILENAME = data/MODEL/player000/02_armR.x			# [3]
+MODEL_FILENAME = data/MODEL/player000/03_handR.x		# [4]
+MODEL_FILENAME = data/MODEL/player000/04_armL.x			# [5]
+MODEL_FILENAME = data/MODEL/player000/05_handL.x		# [6]
+MODEL_FILENAME = data/MODEL/player000/06_legR.x			# [7]
+MODEL_FILENAME = data/MODEL/player000/07_footR.x		# [8]
+MODEL_FILENAME = data/MODEL/player000/08_legL.x			# [9]
+MODEL_FILENAME = data/MODEL/player000/09_footL.x		# [10]
+MODEL_FILENAME = data/MODEL/shark/00_サメ(頭).x			# [11]
+MODEL_FILENAME = data/MODEL/shark/01_サメ(胴体).x		# [12]
+MODEL_FILENAME = data/MODEL/shark/02_サメ(右腕).x		# [13]
+MODEL_FILENAME = data/MODEL/shark/03_サメ(左腕).x		# [14]
+MODEL_FILENAME = data/MODEL/shark/04_サメ(腰).x			# [15]
+MODEL_FILENAME = data/MODEL/shark/05_サメ(腿).x			# [16]
+MODEL_FILENAME = data/MODEL/shark/06_サメ(膝).x			# [17]
+MODEL_FILENAME = data/MODEL/shark/07_サメ(右足).x		# [18]
+MODEL_FILENAME = data/MODEL/shark/08_サメ(左足).x		# [19]
+MODEL_FILENAME = data/MODEL/shark/09_サメ(尾ひれ).x		# [20]
+MODEL_FILENAME = data/MODEL/shark/10_サメ(下顎).x		# [21]
+

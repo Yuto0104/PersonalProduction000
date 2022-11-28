@@ -1,0 +1,35 @@
+// テクスチャの最大数
+MAX_TEXTURE = 28
+
+//***************************
+// TEXTUREファイル名の読み込み
+//***************************
+TEXTURE_FILENAME = data/TEXTURE/bullet000.png			# [0]
+TEXTURE_FILENAME = data/TEXTURE/effect000.jpg			# [1]
+TEXTURE_FILENAME = data/TEXTURE/695783_VvJuOyc1.png		# [2]
+TEXTURE_FILENAME = data/TEXTURE/explosion000.png		# [3]
+TEXTURE_FILENAME = data/TEXTURE/ボス.png				# [4]
+TEXTURE_FILENAME = data/TEXTURE/sky002.jpg				# [5]
+TEXTURE_FILENAME = data/TEXTURE/number003.png			# [6]
+TEXTURE_FILENAME = data/TEXTURE/ハート.png				# [7]
+TEXTURE_FILENAME = data/TEXTURE/field005.jpg			# [8]
+TEXTURE_FILENAME = data/TEXTURE/砂漠.jpg				# [9]
+TEXTURE_FILENAME = data/TEXTURE/bill000.png				# [10]
+TEXTURE_FILENAME = data/TEXTURE/装甲.png				# [11]
+TEXTURE_FILENAME = data/TEXTURE/sky001.png				# [12]
+TEXTURE_FILENAME = data/TEXTURE/地面000.png				# [13]
+TEXTURE_FILENAME = data/TEXTURE/クリスタル.jpg			# [14]
+TEXTURE_FILENAME = data/TEXTURE/PressEnter.png			# [15]
+TEXTURE_FILENAME = data/TEXTURE/TitleLogo.png			# [16]
+TEXTURE_FILENAME = data/TEXTURE/ScoreFrame.png			# [17]
+TEXTURE_FILENAME = data/TEXTURE/TITLE.png				# [18]
+TEXTURE_FILENAME = data/TEXTURE/NewGame.png				# [19]
+TEXTURE_FILENAME = data/TEXTURE/通信エラー.png			# [20]
+TEXTURE_FILENAME = data/TEXTURE/RANKING.png				# [21]
+TEXTURE_FILENAME = data/TEXTURE/説明.png				# [22]
+TEXTURE_FILENAME = data/TEXTURE/チュートリアル.png		# [23]
+TEXTURE_FILENAME = data/TEXTURE/EXIT.png				# [24]
+TEXTURE_FILENAME = data/TEXTURE/return.png				# [25]
+TEXTURE_FILENAME = data/TEXTURE/pause100.png			# [26]
+TEXTURE_FILENAME = data/TEXTURE/tex_eff_light02.png		# [27]
+

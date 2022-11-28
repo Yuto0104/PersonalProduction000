@@ -216,6 +216,9 @@ void CSuper::Release(void)
 
 		// €–Sƒtƒ‰ƒO‚ğ—§‚Ä‚é
 		m_bDeath = true;
+
+		// I—¹
+		Uninit();
 	}
 }
 

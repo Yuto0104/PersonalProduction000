@@ -41,7 +41,7 @@ public:
 	void Update() override;											// 更新
 	void Draw() override;											// 描画
 	void SetVtx() override;											// 頂点座標などの設定
-	void SetTex() override;
+	void SetTex() override;											// テクスチャ座標の設定
 	void SetRadius(float fRadius);									// 半径の取得
 	void SetSphereRange(D3DXVECTOR2 sphereRange);					// 球の描画範囲の取得
 

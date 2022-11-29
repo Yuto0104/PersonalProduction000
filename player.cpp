@@ -22,6 +22,7 @@
 #include "calculation.h"
 #include "move.h"
 #include "debug_proc.h"
+#include "orbit.h"
 
 //=============================================================================
 // インスタンス生成
@@ -52,6 +53,7 @@ CPlayer * CPlayer::Create()
 // 概要 : インスタンス生成時に行う処理
 //=============================================================================
 CPlayer::CPlayer() : m_pMove(nullptr),
+m_pOrbit(nullptr),
 m_EAction(NEUTRAL_ACTION),
 m_rotDest(D3DXVECTOR3(0.0f,0.0f,0.0f)),
 m_fSpeed(0.0f),
@@ -84,6 +86,14 @@ HRESULT CPlayer::Init()
 	m_pMove = new CMove;
 	assert(m_pMove != nullptr);
 	m_pMove->SetMoving(1.0f, 5.0f, 0.5f, 0.1f);
+
+	// 軌跡の設定
+	m_pOrbit = COrbit::Create();
+	m_pOrbit->SetMtxParent(GetMtxWorld());
+	m_pOrbit->SetOffset(D3DXVECTOR3(0.0f, 50.0f, 0.0f));
+	m_pOrbit->SetDivision(100);
+	m_pOrbit->SetCol(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f));
+	m_pOrbit->SetBlendMode(COrbit::MODE_ADD);
 
 	return E_NOTIMPL;
 }

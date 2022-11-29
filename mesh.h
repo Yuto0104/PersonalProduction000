@@ -135,11 +135,13 @@ public:
 	D3DXMATRIX GetMtxWorld() { return m_mtxWorld; }									// ワールドマトリックスのゲッター
 	DOUBLE_INT GetBlock() { return m_block; }										// ブロック数のゲッター
 	DOUBLE_INT GetLine() { return m_line; }											// ライン数のゲッター
+	int GetVtx() { return m_nVtx; }													// 頂点数のゲッター
 	void SetSplitTex(bool bSplitTex);												// テクスチャ分割するかのセッター
 	bool GetSplitTex() { return m_bSplitTex; }										// テクスチャ分割するかのゲッター
 	void SetScrollTex(D3DXVECTOR2 addTex, bool bScrollTex);							// テクスチャスクロールの設定
 	void LoadTex(const int nNumTex) { m_nNumTex = nNumTex; }						// テクスチャの設定
 	void SetCol(const D3DXCOLOR &col);												// 色の設定
+	D3DXCOLOR GetCol() { return m_col; }											// 色の取得
 	D3DXVECTOR2 GetTex() { return m_tex; }											// テクスチャのゲッター
 	bool Collison(CObject *pTarget);												// 当たり判定
 

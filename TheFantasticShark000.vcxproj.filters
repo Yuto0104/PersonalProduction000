@@ -64,13 +64,25 @@
     <Filter Include="ヘッダー ファイル\Object">
       <UniqueIdentifier>{33c03b15-b437-4cb4-ab5d-6e941f1e4dcf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\Object\3D">
+      <UniqueIdentifier>{d9e35765-b8d6-40ac-89e6-acdfa0466fe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Object\2D">
+      <UniqueIdentifier>{e8756143-6116-4c2f-ad80-8f0fe411f5aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Object\Scene">
+      <UniqueIdentifier>{d3353add-eddc-49c4-8a7b-54b89b4881d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Object\3D\Mesh">
+      <UniqueIdentifier>{0ed31288-28e3-4b8c-9b0f-ffa1cb74b749}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Object\3D\Model">
+      <UniqueIdentifier>{12ff552f-d489-4f12-90cc-7ed947f1d638}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
       <Filter>ヘッダー ファイル\System</Filter>
-    </ClInclude>
-    <ClInclude Include="bg.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
     </ClInclude>
     <ClInclude Include="calculation.h">
       <Filter>ヘッダー ファイル\Utility</Filter>
@@ -83,12 +95,6 @@
     </ClInclude>
     <ClInclude Include="debug_proc.h">
       <Filter>ヘッダー ファイル\System</Filter>
-    </ClInclude>
-    <ClInclude Include="fade.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="game.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
     </ClInclude>
     <ClInclude Include="input.h">
       <Filter>ヘッダー ファイル\Input</Filter>
@@ -114,43 +120,7 @@
     <ClInclude Include="super.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
-    <ClInclude Include="line.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="mesh.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="motion_model3D.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="number.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
     <ClInclude Include="object.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="object2D.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="object3D.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="player.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="result.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="scene_mode.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="sphere.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="title.h">
-      <Filter>ヘッダー ファイル\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="wave_mesh.h">
       <Filter>ヘッダー ファイル\Object</Filter>
     </ClInclude>
     <ClInclude Include="motion.h">
@@ -167,6 +137,54 @@
     </ClInclude>
     <ClInclude Include="model3D.h">
       <Filter>ヘッダー ファイル\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="bg.h">
+      <Filter>ヘッダー ファイル\Object\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="fade.h">
+      <Filter>ヘッダー ファイル\Object\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="object2D.h">
+      <Filter>ヘッダー ファイル\Object\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="number.h">
+      <Filter>ヘッダー ファイル\Object\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="result.h">
+      <Filter>ヘッダー ファイル\Object\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="scene_mode.h">
+      <Filter>ヘッダー ファイル\Object\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="title.h">
+      <Filter>ヘッダー ファイル\Object\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h">
+      <Filter>ヘッダー ファイル\Object\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="line.h">
+      <Filter>ヘッダー ファイル\Object\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>ヘッダー ファイル\Object\3D\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="wave_mesh.h">
+      <Filter>ヘッダー ファイル\Object\3D\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="sphere.h">
+      <Filter>ヘッダー ファイル\Object\3D\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="player.h">
+      <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="object3D.h">
+      <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="motion_model3D.h">
+      <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="orbit.h">
+      <Filter>ヘッダー ファイル\Object\3D\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +289,9 @@
     </ClCompile>
     <ClCompile Include="motion_model3D.cpp">
       <Filter>ソース ファイル\Object\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="orbit.cpp">
+      <Filter>ソース ファイル\Object\3D\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

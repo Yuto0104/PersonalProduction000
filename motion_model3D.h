@@ -53,7 +53,7 @@ public:
 	D3DXVECTOR3 GetRot()  override { return m_rot; }								// 向きのゲッター
 	D3DXVECTOR3 GetSize()  override { return m_size; }								// 大きさのゲッター
 	void SetMtxWorld(D3DXMATRIX mtxWorld) { m_mtxWorld = mtxWorld; }				// ワールドマトリックスのセッター
-	D3DXMATRIX GetMtxWorld() { return m_mtxWorld; }									// ワールドマトリックスのゲッター
+	D3DXMATRIX *GetMtxWorld() { return &m_mtxWorld; }								// ワールドマトリックスのゲッター
 	void SetMotion(const char *pName);												// モーション情報の設定
 	void SetMotion(const char *pName, const int nNumMotion);						// モーション情報の設定(オーバーロード)
 	CMotion *GetMotion() { return m_pMotion; }										// モーション情報の取得

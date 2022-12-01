@@ -21,7 +21,6 @@
 #include "keyboard.h"
 #include "mouse.h"
 #include "texture.h"
-#include "camera_manager.h"
 #include "camera.h"
 #include "light.h"
 #include "object.h"
@@ -43,10 +42,9 @@ CRenderer *CApplication::m_pRenderer = nullptr;						// レンダラーインスタンス
 CKeyboard *CApplication::m_pKeyboard = {};							// キーボードインスタンス
 CMouse *CApplication::m_pMouse = {};								// マウスインスタンス
 CTexture *CApplication::m_pTexture = nullptr;						// テクスチャインスタンス
-CCameraManager *CApplication::m_pCameraManager = nullptr;			// カメラマネージャークラス
 CCamera *CApplication::m_pCamera = nullptr;							// カメラインスタンス
 CApplication::SCENE_MODE CApplication::m_mode = MODE_NONE;			// 現在のモードの格納
-CApplication::SCENE_MODE CApplication::m_nextMode = MODE_TITLE;		// 次のモードの格納
+CApplication::SCENE_MODE CApplication::m_nextMode = MODE_GAME;		// 次のモードの格納
 CSceneMode *CApplication::pSceneMode = nullptr;						// シーンモードを格納
 CFade *CApplication::m_pFade = nullptr;								// フェードクラス
 CLight *CApplication::m_pLight = nullptr;							// ライトクラス
@@ -241,7 +239,6 @@ CApplication::~CApplication()
 	assert(m_pKeyboard == nullptr);
 	assert(m_pMouse == nullptr);
 	assert(m_pTexture == nullptr);
-	assert(m_pCameraManager == nullptr);
 	assert(m_pCamera == nullptr);
 }
 
@@ -259,7 +256,6 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	m_pRenderer = new CRenderer;
 	m_pDebugProc = new CDebugProc;
 	m_pTexture = new CTexture;
-	m_pCameraManager = new CCameraManager;
 	m_pCamera = new CCamera;
 
 	// 入力デバイスのメモリ確保
@@ -291,10 +287,6 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	m_pTexture->Init();
 
 	// 初期化処理
-	assert(m_pCameraManager != nullptr);
-	m_pCameraManager->Init();
-
-	// 初期化処理
 	assert(m_pCamera != nullptr);
 	m_pCamera->Init();
 	m_pCamera->SetViewType(CCamera::TYPE_CLAIRVOYANCE);
@@ -322,9 +314,6 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 
 	// ライトの作成
 	m_pLight = CLight::Create(D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-
-	// シーンモードの設定
-	SetNextMode(CApplication::MODE_TITLE);
 
 	// フェードの設定
 	m_pFade = CFade::Create();
@@ -388,15 +377,6 @@ void CApplication::Uninit()
 		// メモリの解放
 		delete m_pTexture;
 		m_pTexture = nullptr;
-	}
-
-	if (m_pCameraManager != nullptr)
-	{// 終了処理
-		m_pCameraManager->Uninit();
-
-		// メモリの解放
-		delete m_pCameraManager;
-		m_pCameraManager = nullptr;
 	}
 
 	if (m_pCamera != nullptr)

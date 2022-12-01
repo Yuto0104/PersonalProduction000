@@ -152,7 +152,6 @@
     <ClInclude Include="bg.h" />
     <ClInclude Include="calculation.h" />
     <ClInclude Include="camera.h" />
-    <ClInclude Include="camera_manager.h" />
     <ClInclude Include="debug_proc.h" />
     <ClInclude Include="fade.h" />
     <ClInclude Include="game.h" />
@@ -189,7 +188,6 @@
     <ClCompile Include="bg.cpp" />
     <ClCompile Include="calculation.cpp" />
     <ClCompile Include="camera.cpp" />
-    <ClCompile Include="camera_manager.cpp" />
     <ClCompile Include="debug_proc.cpp" />
     <ClCompile Include="fade.cpp" />
     <ClCompile Include="game.cpp" />

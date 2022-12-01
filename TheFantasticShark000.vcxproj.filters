@@ -28,17 +28,11 @@
     <Filter Include="ソース ファイル\Manager">
       <UniqueIdentifier>{a9653fe2-d09c-422e-9066-1ca9bdb7f66b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Model">
-      <UniqueIdentifier>{b7f980dc-0e87-49de-a80e-7a045f3fb254}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\Object\2D">
       <UniqueIdentifier>{daf7f765-2426-458c-8c53-69edea704667}</UniqueIdentifier>
     </Filter>
     <Filter Include="ソース ファイル\Object\3D">
       <UniqueIdentifier>{a6f89e73-40a8-4016-84ef-6bf3d1f1edd8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Object\Scene">
-      <UniqueIdentifier>{15ff79a1-7ab7-4ac9-9dd8-db4c3045fb52}</UniqueIdentifier>
     </Filter>
     <Filter Include="ソース ファイル\Object\3D\Mesh">
       <UniqueIdentifier>{73afea3c-d384-42cc-9c54-4bfefff3d4ed}</UniqueIdentifier>
@@ -70,14 +64,20 @@
     <Filter Include="ヘッダー ファイル\Object\2D">
       <UniqueIdentifier>{e8756143-6116-4c2f-ad80-8f0fe411f5aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Object\Scene">
-      <UniqueIdentifier>{d3353add-eddc-49c4-8a7b-54b89b4881d2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\Object\3D\Mesh">
       <UniqueIdentifier>{0ed31288-28e3-4b8c-9b0f-ffa1cb74b749}</UniqueIdentifier>
     </Filter>
     <Filter Include="ヘッダー ファイル\Object\3D\Model">
       <UniqueIdentifier>{12ff552f-d489-4f12-90cc-7ed947f1d638}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Model">
+      <UniqueIdentifier>{b7f980dc-0e87-49de-a80e-7a045f3fb254}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Scene">
+      <UniqueIdentifier>{d3353add-eddc-49c4-8a7b-54b89b4881d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Scene">
+      <UniqueIdentifier>{15ff79a1-7ab7-4ac9-9dd8-db4c3045fb52}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -89,9 +89,6 @@
     </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>ヘッダー ファイル\System</Filter>
-    </ClInclude>
-    <ClInclude Include="camera_manager.h">
-      <Filter>ヘッダー ファイル\Manager</Filter>
     </ClInclude>
     <ClInclude Include="debug_proc.h">
       <Filter>ヘッダー ファイル\System</Filter>
@@ -151,16 +148,16 @@
       <Filter>ヘッダー ファイル\Object\2D</Filter>
     </ClInclude>
     <ClInclude Include="result.h">
-      <Filter>ヘッダー ファイル\Object\Scene</Filter>
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
     <ClInclude Include="scene_mode.h">
-      <Filter>ヘッダー ファイル\Object\Scene</Filter>
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
     <ClInclude Include="title.h">
-      <Filter>ヘッダー ファイル\Object\Scene</Filter>
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
     <ClInclude Include="game.h">
-      <Filter>ヘッダー ファイル\Object\Scene</Filter>
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
     <ClInclude Include="line.h">
       <Filter>ヘッダー ファイル\Object\3D</Filter>
@@ -215,9 +212,6 @@
     <ClCompile Include="mouse.cpp">
       <Filter>ソース ファイル\Input</Filter>
     </ClCompile>
-    <ClCompile Include="camera_manager.cpp">
-      <Filter>ソース ファイル\Manager</Filter>
-    </ClCompile>
     <ClCompile Include="camera.cpp">
       <Filter>ソース ファイル\System</Filter>
     </ClCompile>
@@ -252,16 +246,16 @@
       <Filter>ソース ファイル\Object\2D</Filter>
     </ClCompile>
     <ClCompile Include="game.cpp">
-      <Filter>ソース ファイル\Object\Scene</Filter>
+      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="result.cpp">
-      <Filter>ソース ファイル\Object\Scene</Filter>
+      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="scene_mode.cpp">
-      <Filter>ソース ファイル\Object\Scene</Filter>
+      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="title.cpp">
-      <Filter>ソース ファイル\Object\Scene</Filter>
+      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
     <ClCompile Include="super.cpp">
       <Filter>ソース ファイル\System</Filter>

@@ -28,7 +28,6 @@ class CDebugProc;
 class CKeyboard;
 class CMouse;
 class CTexture;
-class CCameraManager;
 class CCamera;
 class CSceneMode;
 class CFade;
@@ -64,7 +63,6 @@ public:
 	static CKeyboard *GetKeyboard() { return m_pKeyboard; }								// キーボードのゲッター
 	static CMouse *GetMouse() { return m_pMouse; }										// マウスのゲッター
 	static CTexture *GetTexture() { return m_pTexture; }								// テクスチャのゲッター
-	static CCameraManager *GetCameraManager() { return m_pCameraManager; }				// カメラマネージャーのゲッター
 	static CCamera *GetCamera() { return m_pCamera; }									// カメラのゲッター
 	static CLight *GetLight() { return m_pLight; }										// ライトの取得
 	static D3DXVECTOR3 ScreenCastWorld(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
@@ -99,7 +97,6 @@ private:
 	static CKeyboard *m_pKeyboard;				// キーボードクラス
 	static CMouse *m_pMouse;					// マウスクラス
 	static CTexture *m_pTexture;				// テクスチャクラス
-	static CCameraManager *m_pCameraManager;	// カメラマネージャークラス
 	static CCamera *m_pCamera;					// ゲームカメラクラス
 	static SCENE_MODE m_mode;					// 現在のモードの格納
 	static SCENE_MODE m_nextMode;				// 次に設定するモード

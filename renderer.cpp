@@ -13,10 +13,11 @@
 #include <assert.h>
 
 #include "renderer.h"
-#include "object.h"
+#include "super.h"
 #include "application.h"
 #include "camera.h"
 #include "debug_proc.h"
+#include "collision.h"
 
 //=============================================================================
 // コンストラクタ
@@ -153,8 +154,11 @@ void CRenderer::Uninit()
 //=============================================================================
 void CRenderer::Update()
 {
-	// ポリゴンの更新処理
-	CObject::UpdateAll();
+	// 更新処理
+	CSuper::UpdateAll();
+
+	// 当たり判定の更新
+	CCollision::UpdateAll();
 }
 
 //=============================================================================
@@ -183,8 +187,11 @@ void CRenderer::Draw()
 		// カメラの設定
 		CApplication::GetCamera()->Set();
 
-		// ポリゴンの描画処理
-		CObject::DrawAll();
+		// 描画処理
+		CSuper::DrawAll();
+
+		// 当たり判定の描画
+		CCollision::DrawAll();
 
 #ifdef _DEBUG
 		// デバック表示

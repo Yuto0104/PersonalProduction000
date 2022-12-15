@@ -101,6 +101,9 @@ public:
 	// モーションブレンドを行っているか設定
 	void SetMotionBlend(bool bMotionBlend) { m_bMotionBlend = bMotionBlend; }
 
+	// パーツの取得
+	CParts *GetParts(const int nNumParts) { return m_pParts[nNumParts]; }
+
 	// パーツの最大数の取得
 	int GetMaxParts() { return m_nMaxParts; }
 

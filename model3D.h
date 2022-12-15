@@ -75,12 +75,17 @@ public:
 	void Update();															// 更新
 	void Draw();															// 描画
 	void Draw(D3DXMATRIX mtxParent);										// 描画(オーバーロード)
+	void DrawMaterial();													// マテリアル描画
 	void SetPos(const D3DXVECTOR3 &pos);									// 位置のセッター
 	void SetRot(const D3DXVECTOR3 &rot);									// 向きのセッター
 	void SetSize(const D3DXVECTOR3 &size);									// 大きさのセッター
 	void SetMtxWorld(D3DXMATRIX mtxWorld) { m_mtxWorld = mtxWorld; }		// ワールドマトリックスの設定
 	void SetParent(CModel3D *pParent) { m_pParent = pParent; }				// 親モデルのセッター
 	void SetModelID(const int nModelID) { m_nModelID = nModelID; }			// モデルID
+	void SetColor(const D3DXCOLOR color);									// カラーの設定
+	void SetColor(bool bColor) { m_bColor = bColor; }						// カラーの設定(オーバーロード)
+	void SetShadow(bool bShadow) { m_bShadow = bShadow; }					// 影の使用状況の設定
+	void SetLighting(bool bLighting) { m_bLighting = bLighting; }			// ライトを使用状況の設定
 	D3DXVECTOR3 GetPos() { return m_pos; }									// 位置のゲッター
 	D3DXVECTOR3 GetRot() { return m_rot; }									// 向きのゲッター
 	D3DXVECTOR3 GetSize() { return m_size; }								// 大きさのゲッター
@@ -108,7 +113,11 @@ private:
 	D3DXVECTOR3			m_pos;				// 位置
 	D3DXVECTOR3			m_rot;				// 向き
 	D3DXVECTOR3			m_size;				// 大きさ
+	D3DXCOLOR			m_color;			// カラー
 	int					m_nModelID;			// モデルID
+	bool				m_bColor;			// カラーを使用する
+	bool				m_bShadow;			// 影の使用状況
+	bool				m_bLighting;		// ライトの使用状況
 };
 
 #endif

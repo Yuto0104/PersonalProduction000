@@ -79,6 +79,12 @@
     <Filter Include="ソース ファイル\Scene">
       <UniqueIdentifier>{15ff79a1-7ab7-4ac9-9dd8-db4c3045fb52}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\Collision">
+      <UniqueIdentifier>{04dd7023-a6ce-4bfd-b384-d869b6269f39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Collision">
+      <UniqueIdentifier>{40ecad5d-7c22-43f7-9a42-2ec5e3c7bced}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application.h">
@@ -174,14 +180,32 @@
     <ClInclude Include="player.h">
       <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
     </ClInclude>
-    <ClInclude Include="object3D.h">
-      <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
-    </ClInclude>
     <ClInclude Include="motion_model3D.h">
       <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
     </ClInclude>
     <ClInclude Include="orbit.h">
       <Filter>ヘッダー ファイル\Object\3D\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="sound.h">
+      <Filter>ヘッダー ファイル\System</Filter>
+    </ClInclude>
+    <ClInclude Include="object3D.h">
+      <Filter>ヘッダー ファイル\Object\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="model_obj.h">
+      <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="motion_enemy.h">
+      <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="collision.h">
+      <Filter>ヘッダー ファイル\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="collision_rectangle3D.h">
+      <Filter>ヘッダー ファイル\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="collision_sphere.h">
+      <Filter>ヘッダー ファイル\Collision</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -286,6 +310,24 @@
     </ClCompile>
     <ClCompile Include="orbit.cpp">
       <Filter>ソース ファイル\Object\3D\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="sound.cpp">
+      <Filter>ソース ファイル\System</Filter>
+    </ClCompile>
+    <ClCompile Include="model_obj.cpp">
+      <Filter>ソース ファイル\Object\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="motion_enemy.cpp">
+      <Filter>ソース ファイル\Object\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="collision_rectangle3D.cpp">
+      <Filter>ソース ファイル\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="collision.cpp">
+      <Filter>ソース ファイル\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="collision_sphere.cpp">
+      <Filter>ソース ファイル\Collision</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

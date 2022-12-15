@@ -1,67 +1,64 @@
 //=============================================================================
 //
-// ゲームクラス(game.h)
+// 球の衝突判定クラス(collision_sphere.h)
 // Author : 唐﨑結斗
-// 概要 : ゲームクラスの管理を行う
+// 概要 : 球の衝突判定生成を行う
 //
 //=============================================================================
-#ifndef _GAME_H_		// このマクロ定義がされてなかったら
-#define _GAME_H_		// 二重インクルード防止のマクロ定義
+#ifndef _COLLISION_SPHERE_H_		// このマクロ定義がされてなかったら
+#define _COLLISION_SPHERE_H_		// 二重インクルード防止のマクロ定義
 
 //*****************************************************************************
 // インクルード
 //*****************************************************************************
-#include "scene_mode.h"
+#include "collision.h"
 
 //*****************************************************************************
 // 前方宣言
 //*****************************************************************************
-class CPlayer;
-class CMesh3D;
-class CMotionModel3D;
+class CModel3D;
 
 //=============================================================================
-// ゲームクラス
+// 衝突判定クラス
 // Author : 唐﨑結斗
-// 概要 : ゲーム生成を行うクラス
+// 概要 : 衝突判定クラス生成を行う
 //=============================================================================
-class CGame : public CSceneMode
+class CCollision_Sphere : public CCollision
 {
 public:
 	//--------------------------------------------------------------------
 	// 静的メンバ関数
 	//--------------------------------------------------------------------
-	static void SetGame(const bool bGame) { m_bGame = bGame; }		// ゲームの状況の設定
-	static CMesh3D *GetMesh() { return m_pMesh3D; }					// メッシュのゲッター
+	static CCollision_Sphere *Create();			// インスタンスの生成
 
 	//--------------------------------------------------------------------
 	// コンストラクタとデストラクタ
 	//--------------------------------------------------------------------
-	CGame();
-	~CGame() override;
+	explicit CCollision_Sphere();
+	virtual ~CCollision_Sphere();
 
 	//--------------------------------------------------------------------
-	// 静的メンバ変数
+	// 純粋仮想関数
 	//--------------------------------------------------------------------
-	static CPlayer *m_pPlayer;						// プレイヤークラス
-	static CMesh3D *m_pMesh3D;						// メッシュクラス
-	static CMotionModel3D *m_pMotionModel3D;		// モーションモデルクラス
-	static D3DXCOLOR fogColor;						// フォグカラー
-	static float fFogStartPos;						// フォグの開始点
-	static float fFogEndPos;						// フォグの終了点
-	static float fFogDensity;						// フォグの密度
-	static bool m_bGame;							// ゲームの状況
+	HRESULT Init() override;													// 初期化
+	void Uninit() override;														// 終了
+	void Update() override;														// 更新
+	void Draw() override;														// 描画
+	bool Collision(CObject::EObjectType objeType, bool bExtrude) override;		// 当たり判定	
+	bool ToSphere(CCollision *pTarget, bool bExtrude);							// 球との当たり判定
 
+private:
 	//--------------------------------------------------------------------
-	// メンバ関数
+	// メンバ変数
 	//--------------------------------------------------------------------
-	HRESULT Init() override;					// 初期化
-	void Uninit() override;						// 終了
-	void Update() override;						// 更新
-	void Draw() override;						// 描画
+#ifdef _DEBUG
+	CModel3D *m_pModel;		// モデル情報
+	D3DXMATRIX m_mtxWorld;	// ワールドマトリックス
+#endif // _DEBUG
 };
 
 #endif
+
 
 
 

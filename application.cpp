@@ -23,6 +23,7 @@
 #include "texture.h"
 #include "camera.h"
 #include "light.h"
+#include "sound.h"
 #include "object.h"
 #include "object2D.h"
 #include "object3D.h"
@@ -32,6 +33,7 @@
 #include "game.h"
 #include "result.h"
 #include "fade.h"
+#include "collision.h"
 
 //*****************************************************************************
 // ê√ìIÉÅÉìÉoïœêîêÈåæ
@@ -48,6 +50,7 @@ CApplication::SCENE_MODE CApplication::m_nextMode = MODE_GAME;		// éüÇÃÉÇÅ[ÉhÇÃä
 CSceneMode *CApplication::pSceneMode = nullptr;						// ÉVÅ[ÉìÉÇÅ[ÉhÇäiî[
 CFade *CApplication::m_pFade = nullptr;								// ÉtÉFÅ[ÉhÉNÉâÉX
 CLight *CApplication::m_pLight = nullptr;							// ÉâÉCÉgÉNÉâÉX
+CSound *CApplication::m_pSound = nullptr;							// ÉTÉEÉìÉhÉNÉâÉX
 int CApplication::m_nPriority = 0;									// ÉvÉâÉCÉIÉäÉeÉBî‘çÜ
 bool CApplication::m_bWireFrame = false;							// ÉèÉCÉÑÅ[ÉtÉåÅ[ÉÄÇégÇ§Ç©
 
@@ -189,7 +192,10 @@ void CApplication::SetMode(SCENE_MODE mode)
 	}
 
 	// ÉIÉuÉWÉFÉNÉgÇÃâï˙
-	CObject::ReleaseAll(false);
+	CSuper::ReleaseAll(false);
+
+	// ìñÇΩÇËîªíËÇÃèIóπ
+	CCollision::ReleaseAll();
 
 	m_mode = mode;
 
@@ -239,7 +245,8 @@ CApplication::~CApplication()
 	assert(m_pKeyboard == nullptr);
 	assert(m_pMouse == nullptr);
 	assert(m_pTexture == nullptr);
-	assert(m_pCamera == nullptr);
+	assert(m_pCamera == nullptr); 
+	assert(m_pSound == nullptr);
 }
 
 //=============================================================================
@@ -257,6 +264,7 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	m_pDebugProc = new CDebugProc;
 	m_pTexture = new CTexture;
 	m_pCamera = new CCamera;
+	m_pSound = new CSound;
 
 	// ì¸óÕÉfÉoÉCÉXÇÃÉÅÉÇÉäämï€
 	m_pKeyboard = new CKeyboard;
@@ -296,6 +304,10 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	m_pDebugProc->Init();
 
 	// èâä˙âªèàóù
+	assert(m_pSound != nullptr);
+	m_pSound->Init(m_hWnd);
+
+	// èâä˙âªèàóù
 	assert(m_pKeyboard != nullptr);
 	if (FAILED(m_pKeyboard->Init(hInstance, m_hWnd)))
 	{
@@ -329,7 +341,10 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 void CApplication::Uninit()
 {
 	// ÉIÉuÉWÉFÉNÉgÇÃâï˙
-	CObject::ReleaseAll(true);
+	CSuper::ReleaseAll(true);
+
+	// ìñÇΩÇËîªíËÇÃèIóπ
+	CCollision::ReleaseAll();
 
 	// ÉÇÉfÉãèÓïÒÇÃèIóπ
 	CModel3D::UninitModel();
@@ -388,6 +403,15 @@ void CApplication::Uninit()
 		m_pCamera = nullptr;
 	}
 
+	if (m_pSound != nullptr)
+	{// èIóπèàóù
+		m_pSound->Uninit();
+
+		// ÉÅÉÇÉäÇÃâï˙
+		delete m_pSound;
+		m_pSound = nullptr;
+	}
+
 	// ÉâÉCÉgÇÃâï˙
 	CLight::ReleaseAll();
 }
@@ -428,47 +452,7 @@ void CApplication::Update()
 	{
 		m_pRenderer->GetDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	}
-	//if (m_pMouse->GetTrigger(CMouse::MOUSE_KEY_LEFT))
-	//{
-	//	CObject2D *pObject2D = CObject2D::Create(m_nPriority);
-	//	pObject2D->SetPos(D3DXVECTOR3(m_pMouse->GetMouseCursor()));
-	//	pObject2D->SetSize(D3DXVECTOR3(50.0f, 50.0f, 0.0f));
-	//	pObject2D->LoadTex(0);
-	//}
 
-	//if (m_pKeyboard->GetTrigger(DIK_UP))
-	//{
-	//	m_nPriority++;
-
-	//	if (m_nPriority >= CObject::MAX_LEVEL)
-	//	{
-	//		m_nPriority = 0;
-	//	}
-	//}
-	//if (m_pKeyboard->GetTrigger(DIK_DOWN))
-	//{
-	//	m_nPriority--;
-
-	//	if (m_nPriority < 0)
-	//	{
-	//		m_nPriority = CObject::MAX_LEVEL - 1;
-	//	}
-	//}
-
-	//if (m_pKeyboard->GetTrigger(DIK_F3))
-	//{// ÉJÉÅÉâÇÃí«è]ê›íË(ñ⁄ïW : ÉvÉåÉCÉÑÅ[)
-	//	
-	//}
-	//if (m_pKeyboard->GetTrigger(DIK_F4))
-	//{
-	//	CObject::ReleaseCurrent(m_nPriority);
-	//}
-	//if (m_pKeyboard->GetTrigger(DIK_F5))
-	//{
-	//	CObject::RandomRelease(m_nPriority);
-	//}
-
-	//CDebugProc::Print("åªç›ÇÃPriorityLevel : %d\n", m_nPriority);
 #endif // DEBUG
 }
 

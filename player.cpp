@@ -23,6 +23,10 @@
 #include "move.h"
 #include "debug_proc.h"
 #include "orbit.h"
+#include "collision_rectangle3D.h"
+#include "collision_sphere.h"
+#include "parts.h"
+#include "model_obj.h"
 
 //=============================================================================
 // インスタンス生成
@@ -54,10 +58,14 @@ CPlayer * CPlayer::Create()
 //=============================================================================
 CPlayer::CPlayer() : m_pMove(nullptr),
 m_pOrbit(nullptr),
+m_pCollision_Rectangle3D(nullptr),
+m_pHand(nullptr),
+m_pCollisionHand(nullptr),
 m_EAction(NEUTRAL_ACTION),
 m_rotDest(D3DXVECTOR3(0.0f,0.0f,0.0f)),
 m_fSpeed(0.0f),
-m_nNumMotion(0)
+m_nNumMotion(0),
+m_nNumHandParts(0)
 {
 
 }
@@ -82,6 +90,9 @@ HRESULT CPlayer::Init()
 	// 初期化
 	CMotionModel3D::Init();
 
+	// オブジェクトタイプの設定
+	SetObjType(OBJETYPE_PLAYER);
+
 	// 移動クラスのメモリ確保
 	m_pMove = new CMove;
 	assert(m_pMove != nullptr);
@@ -92,8 +103,23 @@ HRESULT CPlayer::Init()
 	m_pOrbit->SetMtxParent(GetMtxWorld());
 	m_pOrbit->SetOffset(D3DXVECTOR3(0.0f, 50.0f, 0.0f));
 	m_pOrbit->SetDivision(100);
-	m_pOrbit->SetCol(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f));
+	m_pOrbit->SetCol(D3DXCOLOR(1.0f, 0.0f, 0.0f, 0.5f));
 	m_pOrbit->SetBlendMode(COrbit::MODE_ADD);
+
+	// 3D矩形の当たり判定の設定
+	m_pCollision_Rectangle3D = CCollision_Rectangle3D::Create();
+	m_pCollision_Rectangle3D->SetParent(this);
+	m_pCollision_Rectangle3D->SetPos(D3DXVECTOR3(0.0f, 25.0f, 0.0f));
+	m_pCollision_Rectangle3D->SetSize(D3DXVECTOR3(30.0f, 50.0f, 20.0f));
+
+	// 手のオブジェクトの設定
+	m_pHand = CModelObj::Create();
+	m_pHand->SetObjType(OBJETYPE_PLAYER);
+	m_nNumHandParts = 3;
+	m_pCollisionHand = CCollision_Rectangle3D::Create();
+	m_pCollisionHand->SetParent(m_pHand);
+	m_pCollisionHand->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	m_pCollisionHand->SetSize(D3DXVECTOR3(10.0f, 10.0f, 10.0f));
 
 	return E_NOTIMPL;
 }
@@ -105,15 +131,46 @@ HRESULT CPlayer::Init()
 //=============================================================================
 void CPlayer::Uninit()
 {
+	// カメラの追従設定(目標 : プレイヤー)
+	CCamera *pCamera = CApplication::GetCamera();
+	pCamera->SetFollowTarget(false);
+	pCamera->SetTargetPosR(false);
+
 	if (m_pMove != nullptr)
-	{// 終了処理
-	 // メモリの解放
+	{// メモリの解放
 		delete m_pMove;
 		m_pMove = nullptr;
 	}
 
+	if (m_pOrbit != nullptr)
+	{// 終了処理
+		m_pOrbit->Uninit();
+		m_pOrbit = nullptr;
+	}
+
+	if (m_pCollision_Rectangle3D != nullptr)
+	{// 終了処理
+		m_pCollision_Rectangle3D->Uninit();
+		m_pCollision_Rectangle3D = nullptr;
+	}
+
+	if (m_pHand != nullptr)
+	{// 終了処理
+		m_pHand->Uninit();
+		m_pHand = nullptr;
+	}
+
+	if (m_pCollisionHand != nullptr)
+	{// 終了処理
+		m_pCollisionHand->Uninit();
+		m_pCollisionHand = nullptr;
+	}
+
 	// 終了
 	CMotionModel3D::Uninit();
+
+	// ゲーム終了
+	CGame::SetGame(false);
 }
 
 //=============================================================================
@@ -132,12 +189,23 @@ void CPlayer::Update()
 	D3DXVECTOR3 pos = GetPos();
 	D3DXVECTOR3 rot = GetRot();
 
-	// 攻撃
+	// 過去位置の更新
+	SetPosOld(pos);
+	m_pHand->SetPosOld(m_pHand->GetPos());
+
+	if (pMotion != nullptr)
+	{// 手のオブジェクトの位置
+		CParts *pHand = pMotion->GetParts(m_nNumHandParts);
+		D3DXMATRIX mtxParts = pHand->GetMtxWorld();
+		D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &mtxParts);
+	}
+	
 	if (pKeyboard->GetTrigger(DIK_RETURN)
 		&& pMotion != nullptr)
-	{
-		pMotion->SetNumMotion(ATTACK_ACTION);
+	{// 攻撃
 		m_EAction = ATTACK_ACTION;
+		pMotion->SetNumMotion(m_EAction);
 	}
 
 	// 移動
@@ -152,12 +220,39 @@ void CPlayer::Update()
 	if (pMotion != nullptr
 		&& !pMotion->GetMotion())
 	{
-		pMotion->SetNumMotion(NEUTRAL_ACTION);
 		m_EAction = NEUTRAL_ACTION;
+		pMotion->SetNumMotion(m_EAction);
+	}
+
+	// 更新
+	CMotionModel3D::Update();
+
+	if (pMotion != nullptr)
+	{// 手のオブジェクトの位置
+		CParts *pHand = pMotion->GetParts(m_nNumHandParts);
+		D3DXMATRIX mtxParts = pHand->GetMtxWorld();
+		D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &mtxParts);
+		m_pHand->SetPos(pos);
 	}
 
 	// 位置の設定
 	SetPos(pos);
+
+	// モデルとの当たり判定
+	m_pCollision_Rectangle3D->Collision(CObject::OBJTYPE_NONE, true);
+
+	if (m_EAction == ATTACK_ACTION)
+	{
+		bool bCollision = m_pCollisionHand->Collision(CObject::OBJTYPE_NONE, false);
+
+		if (bCollision)
+		{
+			CObject *pTarget = m_pCollisionHand->GetCollidedObj();
+			pTarget->Uninit();
+		}
+	}
+	
 
 	// メッシュの当たり判定
 	CMesh3D *pMesh = CGame::GetMesh();
@@ -165,12 +260,11 @@ void CPlayer::Update()
 	
 	// 位置の取得
 	pos = GetPos();
+	D3DXVECTOR3 posHand = m_pHand->GetPos();
 
 	// デバック表示
 	CDebugProc::Print("プレイヤーの位置 | X : %.3f | Y : %.3f | Z : %.3f |\n", pos.x, pos.y, pos.z);
-
-	// 更新
-	CMotionModel3D::Update();
+	CDebugProc::Print("プレイヤーの手の位置 | X : %.3f | Y : %.3f | Z : %.3f |\n", posHand.x, posHand.y, posHand.z);
 }
 
 //=============================================================================

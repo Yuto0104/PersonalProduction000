@@ -32,6 +32,7 @@ class CCamera;
 class CSceneMode;
 class CFade;
 class CLight;
+class CSound;
 
 //=============================================================================
 // アプリケーションクラス
@@ -82,10 +83,10 @@ public:
 	//--------------------------------------------------------------------
 	// メンバ関数
 	//--------------------------------------------------------------------
-	HRESULT Init(HINSTANCE hInstance, HWND hWnd);					// 初期化
-	void Uninit();													// 終了
-	void Update();													// 更新
-	void Draw();													// 描画
+	HRESULT Init(HINSTANCE hInstance, HWND hWnd);		// 初期化
+	void Uninit();										// 終了
+	void Update();										// 更新
+	void Draw();										// 描画
 
 private:
 	//--------------------------------------------------------------------
@@ -103,6 +104,7 @@ private:
 	static CSceneMode *pSceneMode;				// シーンモードを格納
 	static CFade *m_pFade;						// フェードクラス
 	static CLight *m_pLight;					// ライトクラス
+	static CSound *m_pSound;					// サウンドクラス
 	static int m_nPriority;						// プライオリティ番号
 	static bool m_bWireFrame;					// ワイヤーフレームを使うか
 };

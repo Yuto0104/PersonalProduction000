@@ -4,7 +4,7 @@ MAX_TYPE = 22
 //***************************
 // XÉtÉ@ÉCÉãñºÇÃì«Ç›çûÇ›
 //***************************
-MODEL_FILENAME = data/MODEL/airplane000.x              	# [0]
+MODEL_FILENAME = data/MODEL/sphere000.x              	# [0]
 MODEL_FILENAME = data/MODEL/player000/00_body.x			# [1]
 MODEL_FILENAME = data/MODEL/player000/01_head.x			# [2]
 MODEL_FILENAME = data/MODEL/player000/02_armR.x			# [3]

@@ -152,6 +152,9 @@
     <ClInclude Include="bg.h" />
     <ClInclude Include="calculation.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="collision.h" />
+    <ClInclude Include="collision_rectangle3D.h" />
+    <ClInclude Include="collision_sphere.h" />
     <ClInclude Include="debug_proc.h" />
     <ClInclude Include="fade.h" />
     <ClInclude Include="game.h" />
@@ -162,7 +165,9 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="model3D.h" />
+    <ClInclude Include="model_obj.h" />
     <ClInclude Include="motion.h" />
+    <ClInclude Include="motion_enemy.h" />
     <ClInclude Include="motion_model3D.h" />
     <ClInclude Include="mouse.h" />
     <ClInclude Include="move.h" />
@@ -176,6 +181,7 @@
     <ClInclude Include="renderer.h" />
     <ClInclude Include="result.h" />
     <ClInclude Include="scene_mode.h" />
+    <ClInclude Include="sound.h" />
     <ClInclude Include="sphere.h" />
     <ClInclude Include="super.h" />
     <ClInclude Include="texture.h" />
@@ -188,6 +194,9 @@
     <ClCompile Include="bg.cpp" />
     <ClCompile Include="calculation.cpp" />
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="collision.cpp" />
+    <ClCompile Include="collision_rectangle3D.cpp" />
+    <ClCompile Include="collision_sphere.cpp" />
     <ClCompile Include="debug_proc.cpp" />
     <ClCompile Include="fade.cpp" />
     <ClCompile Include="game.cpp" />
@@ -198,7 +207,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="model3D.cpp" />
+    <ClCompile Include="model_obj.cpp" />
     <ClCompile Include="motion.cpp" />
+    <ClCompile Include="motion_enemy.cpp" />
     <ClCompile Include="motion_model3D.cpp" />
     <ClCompile Include="mouse.cpp" />
     <ClCompile Include="move.cpp" />
@@ -212,6 +223,7 @@
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="result.cpp" />
     <ClCompile Include="scene_mode.cpp" />
+    <ClCompile Include="sound.cpp" />
     <ClCompile Include="sphere.cpp" />
     <ClCompile Include="super.cpp" />
     <ClCompile Include="texture.cpp" />

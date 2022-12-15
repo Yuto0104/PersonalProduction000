@@ -260,7 +260,11 @@ CModel3D::CModel3D()
 	m_pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);						// 位置
 	m_rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);						// 向き
 	m_size = D3DXVECTOR3(0.0f, 0.0f, 0.0f);						// 大きさ
+	m_color = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);				// カラー
 	m_nModelID = -1;											// モデルID
+	m_bColor = false;											// カラーを使用する
+	m_bShadow = true;											// 影の使用状況
+	m_bLighting = true;											// ライトの使用状況
 }
 
 //=============================================================================
@@ -319,23 +323,14 @@ void CModel3D::Draw()
 	if (m_nModelID >= 0
 		&& m_nModelID < m_nMaxModel)
 	{
-		// 親のワールドマトリックス
-		D3DXMATRIX mtxParent = {};
-
 		// デバイスの取得
 		LPDIRECT3DDEVICE9 pDevice = CApplication::GetRenderer()->GetDevice();
 
-		// テクスチャポインタの取得
-		CTexture *pTexture = CApplication::GetTexture();
+		// 親のワールドマトリックス
+		D3DXMATRIX mtxParent = {};
 
 		// 計算用マトリックス
 		D3DXMATRIX mtxRot, mtxTrans, mtxScaling;
-
-		// 現在のマテリアル保存用
-		D3DMATERIAL9 matDef;
-
-		// マテリアルデータへのポインタ
-		D3DXMATERIAL *pMat;
 
 		// ワールドマトリックスの初期化
 		D3DXMatrixIdentity(&m_mtxWorld);											// 行列初期化関数
@@ -356,36 +351,16 @@ void CModel3D::Draw()
 			D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxParent);
 		}
 
-		// 影の生成
-		Shadow();
-
+		if (m_bShadow)
+		{// 影の生成
+			Shadow();
+		}
+		
 		// ワールドマトリックスの設定
 		pDevice->SetTransform(D3DTS_WORLD, &m_mtxWorld);
 
-		// 現在のマテリアルを保持
-		pDevice->GetMaterial(&matDef);
-
-		if (m_material[m_nModelID].pBuffer != nullptr)
-		{// マテリアルデータへのポインタを取得
-			pMat = (D3DXMATERIAL*)m_material[m_nModelID].pBuffer->GetBufferPointer();
-
-			for (int nCntMat = 0; nCntMat < (int)m_material[m_nModelID].nNumMat; nCntMat++)
-			{// マテリアルの設定
-				pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
-
-				// テクスチャの設定
-				pDevice->SetTexture(0, pTexture->GetTexture(m_material[m_nModelID].pNumTex[nCntMat]));
-
-				// モデルパーツの描画
-				m_material[m_nModelID].pMesh->DrawSubset(nCntMat);
-
-				// テクスチャの設定
-				pDevice->SetTexture(0, nullptr);
-			}
-		}
-
-		// 保持していたマテリアルを戻す
-		pDevice->SetMaterial(&matDef);
+		// マテリアル描画
+		DrawMaterial();
 	}
 }
 
@@ -402,17 +377,8 @@ void CModel3D::Draw(D3DXMATRIX mtxParent)
 		// デバイスの取得
 		LPDIRECT3DDEVICE9 pDevice = CApplication::GetRenderer()->GetDevice();
 
-		// テクスチャポインタの取得
-		CTexture *pTexture = CApplication::GetTexture();
-
 		// 計算用マトリックス
 		D3DXMATRIX mtxRot, mtxTrans, mtxScaling;
-
-		// 現在のマテリアル保存用
-		D3DMATERIAL9 matDef;
-
-		// マテリアルデータへのポインタ
-		D3DXMATERIAL *pMat;
 
 		// ワールドマトリックスの初期化
 		D3DXMatrixIdentity(&m_mtxWorld);											// 行列初期化関数
@@ -432,37 +398,84 @@ void CModel3D::Draw(D3DXMATRIX mtxParent)
 		// 行列掛け算関数
 		D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxParent);
 
-		// 影の生成
-		Shadow();
+		if (m_bShadow)
+		{// 影の生成
+			Shadow();
+		}
 
 		// ワールドマトリックスの設定
 		pDevice->SetTransform(D3DTS_WORLD, &m_mtxWorld);
 
-		// 現在のマテリアルを保持
-		pDevice->GetMaterial(&matDef);
+		// マテリアル描画
+		DrawMaterial();
+	}
+}
 
-		if (m_material[m_nModelID].pBuffer != nullptr)
-		{// マテリアルデータへのポインタを取得
-			pMat = (D3DXMATERIAL*)m_material[m_nModelID].pBuffer->GetBufferPointer();
+//=============================================================================
+// マテリアル描画
+// Author : 唐﨑結斗
+// 概要 : マテリアル描画
+//=============================================================================
+void CModel3D::DrawMaterial()
+{
+	// デバイスの取得
+	LPDIRECT3DDEVICE9 pDevice = CApplication::GetRenderer()->GetDevice();
 
-			for (int nCntMat = 0; nCntMat < (int)m_material[m_nModelID].nNumMat; nCntMat++)
+	// テクスチャポインタの取得
+	CTexture *pTexture = CApplication::GetTexture();
+
+	// 現在のマテリアル保存用
+	D3DMATERIAL9 matDef;
+
+	// マテリアルデータへのポインタ
+	D3DXMATERIAL *pMat;
+
+	if (!m_bLighting && !m_bColor)
+	{// ライトを無効
+		pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	}
+
+	// 現在のマテリアルを保持
+	pDevice->GetMaterial(&matDef);
+
+	if (m_material[m_nModelID].pBuffer != nullptr)
+	{// マテリアルデータへのポインタを取得
+		pMat = (D3DXMATERIAL*)m_material[m_nModelID].pBuffer->GetBufferPointer();
+
+		for (int nCntMat = 0; nCntMat < (int)m_material[m_nModelID].nNumMat; nCntMat++)
+		{
+			if (m_bColor)
+			{// マテリアル情報の設定
+				D3DMATERIAL9  matD3D = pMat[nCntMat].MatD3D;
+
+				// 引数を色に設定
+				matD3D.Diffuse = m_color;
+
+				// マテリアルの設定
+				pDevice->SetMaterial(&matD3D);
+			}
+			else
 			{// マテリアルの設定
 				pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
-
-				// テクスチャの設定
-				pDevice->SetTexture(0, pTexture->GetTexture(m_material[m_nModelID].pNumTex[nCntMat]));
-
-				// モデルパーツの描画
-				m_material[m_nModelID].pMesh->DrawSubset(nCntMat);
-
-				// テクスチャの設定
-				pDevice->SetTexture(0, nullptr);
 			}
-		}
+			
 
-		// 保持していたマテリアルを戻す
-		pDevice->SetMaterial(&matDef);
+			// テクスチャの設定
+			pDevice->SetTexture(0, pTexture->GetTexture(m_material[m_nModelID].pNumTex[nCntMat]));
+
+			// モデルパーツの描画
+			m_material[m_nModelID].pMesh->DrawSubset(nCntMat);
+
+			// テクスチャの設定
+			pDevice->SetTexture(0, nullptr);
+		}
 	}
+
+	// 保持していたマテリアルを戻す
+	pDevice->SetMaterial(&matDef);
+
+	// ライトを有効
+	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 }
 
 //=============================================================================
@@ -496,6 +509,18 @@ void CModel3D::SetSize(const D3DXVECTOR3 & size)
 {
 	// 大きさの設定
 	m_size = size;
+}
+
+//=============================================================================
+// カラーの設定
+// Author : 唐﨑結斗
+// 概要 : カラーを設定し、カラー使用を
+//=============================================================================
+void CModel3D::SetColor(const D3DXCOLOR color)
+{
+	// 色の設定
+	m_color = color;
+	m_bColor = true;
 }
 
 //=============================================================================

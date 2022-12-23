@@ -13,6 +13,7 @@
 //***************************************************************************
 #include "model3D.h"
 #include "renderer.h"
+#include <vector>
 
 //*****************************************************************************
 // 前方宣言
@@ -51,8 +52,8 @@ public:
 	//***************************************************************
 	typedef struct
 	{
-		int		nFrame;			// フレーム数
-		MyKey	*pKey;			// キー情報
+		int					nFrame;			// フレーム数
+		std::vector<MyKey>	pKey;			// キー情報
 	}MyKeySet;
 
 	//***************************************************************
@@ -60,12 +61,12 @@ public:
 	//***************************************************************
 	typedef struct
 	{
-		int				nNumKey;				// キー数
-		int				nCntKeySet;				// キーセットカウント
-		int				nCntFrame;				// フレームカウント
-		bool			bLoop;					// ループ使用状況
-		bool			bMotion;				// モーションを行っているか
-		MyKeySet		*pKeySet;				// キー設定情報
+		int						nNumKey;				// キー数
+		int						nCntKeySet;				// キーセットカウント
+		int						nCntFrame;				// フレームカウント
+		bool					bLoop;					// ループ使用状況
+		bool					bMotion;				// モーションを行っているか
+		std::vector<MyKeySet>	pKeySet;				// キー設定情報
 	}MyMotion;
 
 	//--------------------------------------------------------------------
@@ -83,11 +84,17 @@ public:
 	// 終了
 	void Uninit(void);
 
+	// モーションストップ
+	void StopMotion(bool bStop) { m_bStop = bStop; }
+
 	// パーツをもとの場所に配置する
 	void SetPartsOrigin();
 
 	// モーションの初期設定
 	void SetMotion(const int nCntMotionSet);
+
+	// モーションの初期設定
+	void SetMotion(const int nCntMotionSet, const int nNumKeySet);
 
 	// パーツの設定
 	void SetParts(D3DXMATRIX mtxWorld);
@@ -107,11 +114,20 @@ public:
 	// パーツの最大数の取得
 	int GetMaxParts() { return m_nMaxParts; }
 
+	// パーツの最大数の取得
+	int GetMaxKeySet(const int nNumMotion) { return m_motion[nNumMotion].nNumKey; }
+
+	// 扱うモーションの番号の取得
+	int GetNumMotion() { return m_nNumMotion; }
+
 	// モーションを行っているか取得
 	bool GetMotion() { return m_bMotion; }
 
 	// モーションブレンドを行っているか取得
 	bool GetMotionBlend() { return m_bMotionBlend; }
+
+	// モーションの停止フラグの取得
+	bool GetStopFlag() { return m_bStop; }
 
 private:
 	//--------------------------------------------------------------------
@@ -135,14 +151,15 @@ private:
 	//--------------------------------------------------------------------
 	// メンバ変数
 	//--------------------------------------------------------------------
-	CModel3D	*m_pParent;									// 親
-	MyMotion	*m_motion;									// モーション
-	CParts		**m_pParts;									// パーツ
-	char		m_partsFile[MAX_MODEL_PARTS][0xff];			// パーツのXファイル名
-	int			m_nMaxParts;								// パーツ数
-	int			m_nNumMotion;								// 扱うモーション
-	bool		m_bMotion;									// モーションを行うか
-	bool		m_bMotionBlend;								// モーションブレンド
+	CModel3D					*m_pParent;									// 親
+	std::vector<MyMotion>		m_motion;									// モーション
+	std::vector<CParts*>		m_pParts;									// パーツ
+	char						m_partsFile[MAX_MODEL_PARTS][0xff];			// パーツのXファイル名
+	int							m_nMaxParts;								// パーツ数
+	int							m_nNumMotion;								// 扱うモーション
+	bool						m_bMotion;									// モーションを行うか
+	bool						m_bMotionBlend;								// モーションブレンド
+	bool						m_bStop;									// モーションの停止フラグ
 };
 
 #endif

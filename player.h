@@ -28,6 +28,7 @@ class CMove;
 class COrbit;
 class CCollision_Rectangle3D;
 class CModelObj;
+class CWeaponObj;
 
 //=============================================================================
 // プレイヤークラス
@@ -38,13 +39,24 @@ class CPlayer : public CMotionModel3D
 {
 public:
 	//--------------------------------------------------------------------
+	// 定数定義
+	//--------------------------------------------------------------------
+	static const unsigned int FIST_ATTACK = 1;
+
+	//--------------------------------------------------------------------
 	// プレイヤーのアクションの列挙型
 	//--------------------------------------------------------------------
 	enum ACTION_TYPE
 	{
+		// 通常
 		NEUTRAL_ACTION = 0,		// ニュートラル
 		MOVE_ACTION,			// 移動
 		ATTACK_ACTION,			// 攻撃
+
+		// ナイフ
+		KNIFE_NEUTRAL_ACTION,	// ニュートラル
+		KNIFE_MOVE_ACTION,		// 移動
+		KNIFE_ATTACK_ACTION,	// 攻撃
 		MAX_ACTION,				// 最大数
 	};
 
@@ -74,15 +86,17 @@ private:
 	//--------------------------------------------------------------------
 	D3DXVECTOR3 Move();		// 移動
 	void Rotate();			// 回転
+	void GetWeapon();		// 武器の取得
 		
 	//--------------------------------------------------------------------
 	// メンバ変数
 	//--------------------------------------------------------------------
 	CMove						*m_pMove;						// 移動情報
 	COrbit						*m_pOrbit;						// 軌跡
-	CCollision_Rectangle3D		*m_pCollision_Rectangle3D;		// 3D矩形の当たり判定
-	CModelObj					*m_pHand;						// 手のオブジェクト情報
-	CCollision_Rectangle3D		*m_pCollisionHand;				// 手の当たり判定
+	CCollision_Rectangle3D		*m_pCollisionRectangle3D;		// 3D矩形の当たり判定
+	CModelObj					*m_pAttack;						// 攻撃オブジェクト情報
+	CCollision_Rectangle3D		*m_pColliAttack;				// 攻撃の当たり判定
+	CWeaponObj					*m_pMyWeapon;					// 武器のポインタ
 	ACTION_TYPE					m_EAction;						// アクションタイプ
 	D3DXVECTOR3					m_move;							// 移動ベクトル
 	D3DXVECTOR3					m_rotDest;						// 目的の向き

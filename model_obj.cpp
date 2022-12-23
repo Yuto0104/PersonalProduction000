@@ -16,6 +16,7 @@
 #include "model_obj.h"
 #include "renderer.h"
 #include "application.h"
+#include "collision_rectangle3D.h"
 
 //=============================================================================
 // インスタンス生成
@@ -122,6 +123,7 @@ void CModelObj::LoadFile(const char *pFileName)
 // 概要 : インスタンス生成時に行う処理
 //=============================================================================
 CModelObj::CModelObj() : m_pModel(nullptr),					// モデル情報
+m_pColliRectangle3D(nullptr),								// 当たり判定
 m_mtxWorld(D3DXMATRIX()),									// ワールドマトリックス
 m_pos(D3DXVECTOR3()),										// 位置
 m_posOld(D3DXVECTOR3()),									// 過去位置
@@ -129,6 +131,7 @@ m_rot(D3DXVECTOR3()),										// 向き
 m_size(D3DXVECTOR3()),										// 大きさ
 m_nType(-1)													// モデルのタイプ
 {
+
 }
 
 //=============================================================================
@@ -164,6 +167,10 @@ HRESULT CModelObj::Init()
 	assert(m_pModel != nullptr);
 	m_pModel->SetModelID(m_nType);
 
+	// 3D矩形の当たり判定の設定
+	m_pColliRectangle3D = CCollision_Rectangle3D::Create();
+	m_pColliRectangle3D->SetParent(this);
+
 	return E_NOTIMPL;
 }
 
@@ -181,6 +188,12 @@ void CModelObj::Uninit()
 		// メモリの解放
 		delete m_pModel;
 		m_pModel = nullptr;
+	}
+
+	if (m_pColliRectangle3D != nullptr)
+	{// 終了処理
+		m_pColliRectangle3D->Uninit();
+		m_pColliRectangle3D = nullptr;
 	}
 
 	// オブジェクトの解放

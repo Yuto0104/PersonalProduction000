@@ -30,8 +30,10 @@ public:
 	{
 		OBJTYPE_NONE = 0,			// タイプ無し
 		OBJTYPE_FADE,				// フェード
-		OBJTYPE_3DMODEL,			// 3Dモデル
 		OBJETYPE_PLAYER,			// プレイヤー
+		OBJETYPE_ENEMY,				// エネミー
+		OBJTYPE_3DMODEL,			// 3Dモデル
+		OBJETYPE_WEAPON,			// 武器
 		MAX_OBJTYPE,				// 種別の最大数
 	};
 

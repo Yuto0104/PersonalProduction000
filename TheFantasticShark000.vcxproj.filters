@@ -207,6 +207,9 @@
     <ClInclude Include="collision_sphere.h">
       <Filter>ヘッダー ファイル\Collision</Filter>
     </ClInclude>
+    <ClInclude Include="weapon_obj.h">
+      <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp">
@@ -328,6 +331,9 @@
     </ClCompile>
     <ClCompile Include="collision_sphere.cpp">
       <Filter>ソース ファイル\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="weapon_obj.cpp">
+      <Filter>ソース ファイル\Object\3D\Model</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

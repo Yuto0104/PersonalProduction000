@@ -77,6 +77,7 @@ public:
 	void SetType(COLLISION_TYPE type) { m_type = type; }								// 当たり判定の設定
 	void SetPos(D3DXVECTOR3 pos) { m_pos = pos; }										// 位置の設定
 	void SetSize(D3DXVECTOR3 size) { m_size = size; }									// サイズの設定
+	void SetUseFlag(bool bUse) { m_bUse = bUse; }										// 使用状況の設定
 	CCollision *GetPrev() { return m_pPrev; }											// 前のオブジェクトへのポインタ取得
 	CCollision *GetNext() { return m_pNext; }											// 次のオブジェクトへのポインタ取得
 	CObject *GetParent() { return m_pParent; }											// 親オブジェクトのポインタ取得
@@ -84,6 +85,7 @@ public:
 	COLLISION_TYPE GetType() { return m_type; }											// 当たり判定の取得
 	D3DXVECTOR3 GetPos() { return m_pos; }												// 位置の取得
 	D3DXVECTOR3 GetSize() { return m_size; }											// サイズの取得
+	bool GetUseFlag() { return m_bUse; }												// 使用状況の取得
 	bool GetDeathFlag() { return m_bDeath; }											// 死亡フラグの取得
 
 private:
@@ -104,6 +106,7 @@ private:
 	COLLISION_TYPE m_type;			// 当たり判定の種別
 	D3DXVECTOR3 m_pos;				// 位置
 	D3DXVECTOR3 m_size;				// 大きさ
+	bool m_bUse;					// 使用状況
 	bool m_bDeath;					// 死亡フラグ
 };
 

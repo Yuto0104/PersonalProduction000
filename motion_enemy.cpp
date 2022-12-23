@@ -21,6 +21,8 @@
 #include "move.h"
 #include "debug_proc.h"
 #include "collision_rectangle3D.h"
+#include "camera.h"
+#include "parts.h"
 
 //=============================================================================
 // インスタンス生成
@@ -55,7 +57,10 @@ m_pCollRectangle3D(nullptr),
 m_EAction(NEUTRAL_ACTION),
 m_rotDest(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),
 m_fSpeed(0.0f),
-m_nNumMotion(0)
+m_nNumMotion(0),
+m_nLife(0),
+m_nCntState(0),			
+m_bDamage(false)
 {
 
 }
@@ -91,6 +96,12 @@ HRESULT CMotionEnemy::Init()
 	m_pCollRectangle3D->SetPos(D3DXVECTOR3(0.0f, 25.0f, 0.0f));
 	m_pCollRectangle3D->SetSize(D3DXVECTOR3(30.0f, 50.0f, 20.0f));
 
+	// 体力の初期値
+	m_nLife = 10;
+
+	// オブジェクトタイプの設定
+	SetObjType(OBJETYPE_ENEMY);
+
 	return E_NOTIMPL;
 }
 
@@ -101,6 +112,15 @@ HRESULT CMotionEnemy::Init()
 //=============================================================================
 void CMotionEnemy::Uninit()
 {
+	// カメラの取得
+	CCamera *pCamera = CApplication::GetCamera();
+
+	if (pCamera->GetTargetPosR() == this)
+	{// カメラのターゲットを終了
+		pCamera->SetTargetPosR(false);
+		pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 0.0f, -500.0f));
+	}
+
 	if (m_pMove != nullptr)
 	{// メモリの解放
 		delete m_pMove;
@@ -126,6 +146,26 @@ void CMotionEnemy::Update()
 {
 	// モーション情報の取得
 	CMotion *pMotion = CMotionModel3D::GetMotion();
+
+	if (m_bDamage)
+	{// 状態のカウントを減少
+		m_nCntState--;
+
+		if (m_nCntState <= 0)
+		{// カウントリセット
+			m_nCntState = 0;
+			m_bDamage = false;
+
+			// パーツ数の取得
+			int nMaxParts = pMotion->GetMaxParts();
+
+			for (int nCntParts = 0; nCntParts < nMaxParts; nCntParts++)
+			{// パーツの取得
+				CParts *pParts = pMotion->GetParts(nCntParts);
+				pParts->SetColor(false);
+			}
+		}
+	}
 
 	// 位置の取得
 	D3DXVECTOR3 pos = GetPos();
@@ -167,6 +207,42 @@ void CMotionEnemy::Draw()
 {
 	// 描画
 	CMotionModel3D::Draw();
+}
+
+//=============================================================================
+// 攻撃を受ける
+// Author : 唐﨑結斗
+// 概要 : 攻撃を受け、ダメージ状態にする
+//=============================================================================
+void CMotionEnemy::Hit(const int nAttack)
+{
+	if (!m_bDamage
+		&& m_nLife > 0)
+	{// 状態カウンターの設定
+		m_nCntState = 30;
+
+		// ダメージフラグ
+		m_bDamage = true;
+
+		// 体力の減少
+		m_nLife -= nAttack;
+
+		if (m_nLife <= 0)
+		{// 体力が0以下
+			Uninit();
+			return;
+		}
+
+		// モーション情報の取得
+		CMotion *pMotion = GetMotion();
+		int nMaxParts = pMotion->GetMaxParts();
+
+		for (int nCntParts = 0; nCntParts < nMaxParts; nCntParts++)
+		{// パーツの取得
+			CParts *pParts = pMotion->GetParts(nCntParts);
+			pParts->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+	}				
 }
 
 //=============================================================================

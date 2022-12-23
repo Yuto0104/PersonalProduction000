@@ -18,7 +18,7 @@
 //*****************************************************************************
 class CPlayer;
 class CMesh3D;
-class CMotionModel3D;
+class CMotionEnemy;
 
 //=============================================================================
 // ゲームクラス
@@ -45,7 +45,7 @@ public:
 	//--------------------------------------------------------------------
 	static CPlayer *m_pPlayer;						// プレイヤークラス
 	static CMesh3D *m_pMesh3D;						// メッシュクラス
-	static CMotionModel3D *m_pMotionModel3D;		// モーションモデルクラス
+	static CMotionEnemy *m_pMotionModel3D;			// モーションモデルクラス
 	static D3DXCOLOR fogColor;						// フォグカラー
 	static float fFogStartPos;						// フォグの開始点
 	static float fFogEndPos;						// フォグの終了点

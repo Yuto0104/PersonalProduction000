@@ -60,6 +60,7 @@ public:
 	void Update(void);														// 更新
 	void Set(void);															// 設定
 	void SetViewType(VIEW_TYPE type);										// タイプの設定
+	void Zoom();															// カメラの拡縮
 	D3DXVECTOR3 GetPosV() { return m_posV; }
 	D3DXVECTOR3 GetPosR() { return m_posR; }
 	D3DXVECTOR3 GetRot() { return m_rot; }
@@ -83,7 +84,6 @@ private:
 	void CalMatrix();				// マトリックス計算
 	void Rotate(void);				// 回転
 	void Move(void);				// 移動
-	void Zoom();					// カメラの拡縮
 
 	//--------------------------------------------------------------------
 	// メンバ変数

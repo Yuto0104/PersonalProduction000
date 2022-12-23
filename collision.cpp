@@ -145,6 +145,7 @@ m_pNext(nullptr),										// 次のオブジェクトへのポインタ
 m_pCollidedObj(nullptr),								// 衝突したオブジェクトへのポインタ
 m_pParent(nullptr),										// 親のオブジェクト
 m_pos(D3DXVECTOR3(0.0f,0.0f,0.0f)),						// 位置
+m_bUse(true),											// 使用状況
 m_bDeath(false)											// 死亡フラグ
 {
 	// 使用数のインクリメント

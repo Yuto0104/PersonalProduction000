@@ -27,13 +27,17 @@
 #include "mesh.h"
 #include "sphere.h"
 #include "bg.h"
+#include "model_obj.h"
+#include "weapon_obj.h"
+#include "collision_rectangle3D.h"
+#include "debug_proc.h"
 
 //*****************************************************************************
 // 静的メンバ変数宣言
 //*****************************************************************************
 CPlayer *CGame::m_pPlayer = nullptr;					// プレイヤークラス
 CMesh3D *CGame::m_pMesh3D;								// メッシュクラス
-CMotionModel3D *CGame::m_pMotionModel3D;				// モーションモデルクラス
+CMotionEnemy *CGame::m_pMotionModel3D;				// モーションモデルクラス
 D3DXCOLOR CGame::fogColor;								// フォグカラー
 float CGame::fFogStartPos;								// フォグの開始点
 float CGame::fFogEndPos;								// フォグの終了点
@@ -98,10 +102,13 @@ HRESULT CGame::Init()
 	m_pPlayer->SetMotion("data/MOTION/motion.txt");
 	m_pPlayer->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 
-	// モデルの表示
+	// 敵の設置
 	m_pMotionModel3D = CMotionEnemy::Create();
 	m_pMotionModel3D->SetMotion("data/MOTION/motion.txt");
-	m_pMotionModel3D->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	m_pMotionModel3D->SetPos(D3DXVECTOR3(100.0f, 0.0f, 0.0f));
+	CMotionEnemy *pMotionModel3D = CMotionEnemy::Create();
+	pMotionModel3D->SetMotion("data/MOTION/motion.txt");
+	pMotionModel3D->SetPos(D3DXVECTOR3(-100.0f, 0.0f, 0.0f));
 
 	// カメラの追従設定(目標 : プレイヤー)
 	CCamera *pCamera = CApplication::GetCamera();
@@ -109,6 +116,19 @@ HRESULT CGame::Init()
 	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 0.0f, -500.0f));
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
 	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+
+	// モデルの設置
+	//CModelObj::LoadFile("data/FILE/BG_model.txt");
+
+	// 武器のの設置
+	CWeaponObj *pWeapon = CWeaponObj::Create();
+	pWeapon->SetPos(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
+	pWeapon->SetType(22);
+	pWeapon->SetWeaponType(CWeaponObj::WEAPONTYPE_KNIFE);
+	pWeapon->SetAttack(5);
+	CCollision_Rectangle3D *pCollision = pWeapon->GetCollision();
+	pCollision->SetSize(D3DXVECTOR3(10.0f, 36.0f, 10.0f));
+	pCollision->SetPos(D3DXVECTOR3(0.0f, 18.0f, 0.0f));
 
 	// マウスカーソルを消す
 	pMouse->SetShowCursor(false);
@@ -184,6 +204,8 @@ void CGame::Uninit()
 void CGame::Update()
 {
 #ifdef _DEBUG
+	CDebugProc::Print("敵の体力 : %d\n", m_pMotionModel3D->GetLife());
+
 	// キーボードの取得
 	CKeyboard *pKeyboard = CApplication::GetKeyboard();
 
@@ -198,6 +220,7 @@ void CGame::Update()
 		if (!pCamera->GetTargetPosR())
 		{
 			pCamera->SetTargetPosR(m_pMotionModel3D);
+			pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 50.0f, 0.0f));
 			pCamera->SetPosRDiff(D3DXVECTOR2(100.0f, 200.0f));
 		}
 		else
@@ -205,6 +228,13 @@ void CGame::Update()
 			pCamera->SetTargetPosR(false);
 		}
 	}
+
+	if (pKeyboard->GetPress(DIK_LSHIFT))
+	{
+		CCamera *pCamera = CApplication::GetCamera();
+		pCamera->Zoom();
+	}
+
 #endif // _DEBUG
 
 	if (!m_bGame)

@@ -27,6 +27,8 @@
 #include "collision_sphere.h"
 #include "parts.h"
 #include "model_obj.h"
+#include "weapon_obj.h"
+#include "motion_enemy.h"
 
 //=============================================================================
 // インスタンス生成
@@ -58,9 +60,10 @@ CPlayer * CPlayer::Create()
 //=============================================================================
 CPlayer::CPlayer() : m_pMove(nullptr),
 m_pOrbit(nullptr),
-m_pCollision_Rectangle3D(nullptr),
-m_pHand(nullptr),
-m_pCollisionHand(nullptr),
+m_pCollisionRectangle3D(nullptr),
+m_pAttack(nullptr),
+m_pColliAttack(nullptr),
+m_pMyWeapon(nullptr),
 m_EAction(NEUTRAL_ACTION),
 m_rotDest(D3DXVECTOR3(0.0f,0.0f,0.0f)),
 m_fSpeed(0.0f),
@@ -107,19 +110,19 @@ HRESULT CPlayer::Init()
 	m_pOrbit->SetBlendMode(COrbit::MODE_ADD);
 
 	// 3D矩形の当たり判定の設定
-	m_pCollision_Rectangle3D = CCollision_Rectangle3D::Create();
-	m_pCollision_Rectangle3D->SetParent(this);
-	m_pCollision_Rectangle3D->SetPos(D3DXVECTOR3(0.0f, 25.0f, 0.0f));
-	m_pCollision_Rectangle3D->SetSize(D3DXVECTOR3(30.0f, 50.0f, 20.0f));
+	m_pCollisionRectangle3D = CCollision_Rectangle3D::Create();
+	m_pCollisionRectangle3D->SetParent(this);
+	m_pCollisionRectangle3D->SetPos(D3DXVECTOR3(0.0f, 25.0f, 0.0f));
+	m_pCollisionRectangle3D->SetSize(D3DXVECTOR3(30.0f, 50.0f, 20.0f));
 
 	// 手のオブジェクトの設定
-	m_pHand = CModelObj::Create();
-	m_pHand->SetObjType(OBJETYPE_PLAYER);
+	m_pAttack = CModelObj::Create();
+	m_pAttack->SetObjType(OBJETYPE_PLAYER);
 	m_nNumHandParts = 3;
-	m_pCollisionHand = CCollision_Rectangle3D::Create();
-	m_pCollisionHand->SetParent(m_pHand);
-	m_pCollisionHand->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
-	m_pCollisionHand->SetSize(D3DXVECTOR3(10.0f, 10.0f, 10.0f));
+	m_pColliAttack = CCollision_Rectangle3D::Create();
+	m_pColliAttack->SetParent(m_pAttack);
+	m_pColliAttack->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	m_pColliAttack->SetSize(D3DXVECTOR3(10.0f, 10.0f, 10.0f));
 
 	return E_NOTIMPL;
 }
@@ -148,22 +151,22 @@ void CPlayer::Uninit()
 		m_pOrbit = nullptr;
 	}
 
-	if (m_pCollision_Rectangle3D != nullptr)
+	if (m_pCollisionRectangle3D != nullptr)
 	{// 終了処理
-		m_pCollision_Rectangle3D->Uninit();
-		m_pCollision_Rectangle3D = nullptr;
+		m_pCollisionRectangle3D->Uninit();
+		m_pCollisionRectangle3D = nullptr;
 	}
 
-	if (m_pHand != nullptr)
+	if (m_pAttack != nullptr)
 	{// 終了処理
-		m_pHand->Uninit();
-		m_pHand = nullptr;
+		m_pAttack->Uninit();
+		m_pAttack = nullptr;
 	}
 
-	if (m_pCollisionHand != nullptr)
+	if (m_pColliAttack != nullptr)
 	{// 終了処理
-		m_pCollisionHand->Uninit();
-		m_pCollisionHand = nullptr;
+		m_pColliAttack->Uninit();
+		m_pColliAttack = nullptr;
 	}
 
 	// 終了
@@ -191,7 +194,7 @@ void CPlayer::Update()
 
 	// 過去位置の更新
 	SetPosOld(pos);
-	m_pHand->SetPosOld(m_pHand->GetPos());
+	m_pAttack->SetPosOld(m_pAttack->GetPos());
 
 	if (pMotion != nullptr)
 	{// 手のオブジェクトの位置
@@ -204,7 +207,24 @@ void CPlayer::Update()
 	if (pKeyboard->GetTrigger(DIK_RETURN)
 		&& pMotion != nullptr)
 	{// 攻撃
-		m_EAction = ATTACK_ACTION;
+		if (m_pMyWeapon == nullptr)
+		{
+			m_EAction = ATTACK_ACTION;
+		}
+		else
+		{
+			switch (m_pMyWeapon->GetWeaponType())
+			{
+			case CWeaponObj::WEAPONTYPE_KNIFE:
+				m_EAction = KNIFE_ATTACK_ACTION;
+				break;
+
+			default:
+				assert(false);
+				break;
+			}
+		}
+
 		pMotion->SetNumMotion(m_EAction);
 	}
 
@@ -216,40 +236,88 @@ void CPlayer::Update()
 	// 回転
 	Rotate();
 
-	// ニュートラルモーションの設定
 	if (pMotion != nullptr
 		&& !pMotion->GetMotion())
-	{
-		m_EAction = NEUTRAL_ACTION;
+	{// ニュートラルモーションの設定
+		if (m_pMyWeapon == nullptr)
+		{
+			m_EAction = NEUTRAL_ACTION;
+		}
+		else
+		{
+			switch (m_pMyWeapon->GetWeaponType())
+			{
+			case CWeaponObj::WEAPONTYPE_KNIFE:
+				m_EAction = KNIFE_NEUTRAL_ACTION;
+				break;
+
+			default:
+				assert(false);
+				break;
+			}
+		}
+
 		pMotion->SetNumMotion(m_EAction);
 	}
 
 	// 更新
 	CMotionModel3D::Update();
 
-	if (pMotion != nullptr)
+	// 位置の設定
+	SetPos(pos);
+
+	// モデルとの当たり判定
+	m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_NONE, true);
+	m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_ENEMY, true);
+
+	// 武器との当たり判定
+	bool bCollisionWeapon = m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_WEAPON, false);
+
+	if (bCollisionWeapon
+		&& pKeyboard->GetTrigger(DIK_E))
+	{// 武器の取得
+		GetWeapon();
+	}
+
+	if (pMotion != nullptr
+		&& m_pMyWeapon == nullptr)
 	{// 手のオブジェクトの位置
 		CParts *pHand = pMotion->GetParts(m_nNumHandParts);
 		D3DXMATRIX mtxParts = pHand->GetMtxWorld();
 		D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &mtxParts);
-		m_pHand->SetPos(pos);
+		m_pAttack->SetPos(pos);
+	}
+	else if (pMotion != nullptr
+		&& m_pMyWeapon != nullptr)
+	{
+		D3DXMATRIX mtxParts = m_pMyWeapon->GetMtxWorld();
+		D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		D3DXVECTOR3 posOffset = D3DXVECTOR3(0.0f, 25.0f, 0.0f);
+
+		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0.0f, 25.0f, 0.0f), &mtxParts);
+		m_pAttack->SetPos(pos);
 	}
 
-	// 位置の設定
-	SetPos(pos);
-
-	// モデルとの当たり判定
-	m_pCollision_Rectangle3D->Collision(CObject::OBJTYPE_NONE, true);
-
-	if (m_EAction == ATTACK_ACTION)
+	if (m_EAction == ATTACK_ACTION
+		|| m_EAction == KNIFE_ATTACK_ACTION)
 	{
-		bool bCollision = m_pCollisionHand->Collision(CObject::OBJTYPE_NONE, false);
+		bool bCollision = m_pColliAttack->Collision(CObject::OBJETYPE_ENEMY, false);
 
 		if (bCollision)
-		{
-			CObject *pTarget = m_pCollisionHand->GetCollidedObj();
-			pTarget->Uninit();
+		{// ターゲットの取得
+			CMotionEnemy *pTarget = (CMotionEnemy*)m_pColliAttack->GetCollidedObj();
+
+			// 攻撃力の設定
+			int nAttack = FIST_ATTACK;
+
+			if (m_pMyWeapon != nullptr)
+			{// 武器を装備している
+				nAttack = m_pMyWeapon->GetAttack();
+			}
+
+			// 攻撃処理
+			pTarget->Hit(nAttack);
 		}
 	}
 	
@@ -260,11 +328,11 @@ void CPlayer::Update()
 	
 	// 位置の取得
 	pos = GetPos();
-	D3DXVECTOR3 posHand = m_pHand->GetPos();
+	D3DXVECTOR3 attackPos = m_pAttack->GetPos();
 
 	// デバック表示
 	CDebugProc::Print("プレイヤーの位置 | X : %.3f | Y : %.3f | Z : %.3f |\n", pos.x, pos.y, pos.z);
-	CDebugProc::Print("プレイヤーの手の位置 | X : %.3f | Y : %.3f | Z : %.3f |\n", posHand.x, posHand.y, posHand.z);
+	CDebugProc::Print("プレイヤーの手の位置 | X : %.3f | Y : %.3f | Z : %.3f |\n", attackPos.x, attackPos.y, attackPos.z);
 }
 
 //=============================================================================
@@ -359,13 +427,30 @@ D3DXVECTOR3 CPlayer::Move()
 		// 角度の正規化
 		m_rotDest.y -= D3DX_PI;
 
-		if (m_EAction == NEUTRAL_ACTION)
-		{
-			m_EAction = MOVE_ACTION;
+		if (m_EAction == NEUTRAL_ACTION
+			|| m_EAction == KNIFE_NEUTRAL_ACTION)
+		{// 移動
+			if (m_pMyWeapon == nullptr)
+			{
+				m_EAction = MOVE_ACTION;
+			}
+			else
+			{
+				switch (m_pMyWeapon->GetWeaponType())
+				{
+				case CWeaponObj::WEAPONTYPE_KNIFE:
+					m_EAction = KNIFE_MOVE_ACTION;
+					break;
+
+				default:
+					assert(false);
+					break;
+				}
+			}
 
 			if (pMotion != nullptr)
 			{
-				pMotion->SetNumMotion(MOVE_ACTION);
+				pMotion->SetNumMotion(m_EAction);
 			}
 		}
 	}
@@ -378,10 +463,28 @@ D3DXVECTOR3 CPlayer::Move()
 
 	if (sqrtf((moveing.x * moveing.x) + (moveing.z * moveing.z)) <= 0.0f
 		&& pMotion != nullptr
-		&& m_EAction == MOVE_ACTION)
+		&& (m_EAction == MOVE_ACTION
+		|| m_EAction == KNIFE_MOVE_ACTION))
 	{
-		m_EAction = NEUTRAL_ACTION;
-		pMotion->SetNumMotion(NEUTRAL_ACTION);
+		if (m_pMyWeapon == nullptr)
+		{
+			m_EAction = NEUTRAL_ACTION;
+		}
+		else
+		{
+			switch (m_pMyWeapon->GetWeaponType())
+			{
+			case CWeaponObj::WEAPONTYPE_KNIFE:
+				m_EAction = KNIFE_NEUTRAL_ACTION;
+				break;
+
+			default:
+				assert(false);
+				break;
+			}
+		}
+
+		pMotion->SetNumMotion(m_EAction);
 	}
 
 	// デバック表示
@@ -421,6 +524,54 @@ void CPlayer::Rotate()
 
 	// 向きの設定
 	SetRot(rot);
+}
+
+//=============================================================================
+// 武器の入手
+// Author : 唐﨑結斗
+// 概要 : 現在の武器を捨てて、新しい武器を取得する
+//=============================================================================
+void CPlayer::GetWeapon()
+{
+	// モーション情報の取得
+	CMotion *pMotion = CMotionModel3D::GetMotion();
+
+	// 手のパーツの取得
+	CParts *pHand = pMotion->GetParts(m_nNumHandParts);
+	CCollision_Rectangle3D *pWeaponCollision = nullptr;
+
+	if (m_pMyWeapon != nullptr)
+	{// 持っていた武器の装備解除
+		m_pMyWeapon->SetParent();
+		pWeaponCollision = m_pMyWeapon->GetCollision();
+		pWeaponCollision->SetUseFlag(true);
+	}
+
+	// 武器の装備
+	CWeaponObj *pWeapon = (CWeaponObj*)m_pCollisionRectangle3D->GetCollidedObj();
+	pWeapon->SetParent(pHand);
+	m_pMyWeapon = pWeapon;
+	m_pMyWeapon->SetPosOffset(D3DXVECTOR3(3.0f, 0.0f, 0.0f));
+	m_pMyWeapon->SetRotOffset(D3DXVECTOR3(0.0f, 0.0f, D3DX_PI * 0.5f));
+	pWeaponCollision = m_pMyWeapon->GetCollision();
+	pWeaponCollision->SetUseFlag(false);
+
+	if (m_EAction == NEUTRAL_ACTION
+		|| m_EAction == KNIFE_NEUTRAL_ACTION)
+	{
+		switch (m_pMyWeapon->GetWeaponType())
+		{
+		case CWeaponObj::WEAPONTYPE_KNIFE:
+			m_EAction = KNIFE_NEUTRAL_ACTION;
+			break;
+
+		default:
+			assert(false);
+			break;
+		}
+
+		pMotion->SetNumMotion(m_EAction);
+	}
 }
 
 

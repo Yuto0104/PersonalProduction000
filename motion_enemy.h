@@ -64,8 +64,11 @@ public:
 	void Uninit() override;											// 終了
 	void Update() override;											// 更新
 	void Draw() override;											// 描画
+	void Hit(const int nAttack);									// 攻撃を受ける
 	void SetSpeed(const float fSpeed) { m_fSpeed = fSpeed; }		// 移動速度の設定
-	
+	void SetLife(const int nLife) { m_nLife = nLife; }				// 体力の設定
+	int GetLife() { return m_nLife; }								// 体力の表示
+
 private:
 	//--------------------------------------------------------------------
 	// メンバ関数
@@ -83,6 +86,9 @@ private:
 	D3DXVECTOR3					m_rotDest;				// 目的の向き
 	float						m_fSpeed;				// 移動速度	
 	int							m_nNumMotion;			// 現在のモーション番号
+	int							m_nLife;				// 体力
+	int							m_nCntState;			// 状態カウンター
+	bool						m_bDamage;				// ダメージフラグ
 };
 
 #endif

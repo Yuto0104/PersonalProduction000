@@ -340,11 +340,9 @@ void CCamera::CalMatrix()
 
 		// 方向ベクトルの計算
 		D3DXVECTOR3 diff = m_pTargetPosR->GetPos() - m_pos;
-		/*float fDiffLength = sqrtf((diff.x * diff.x) + (diff.z * diff.z));*/
 
 		// 視点の設定
-		D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 50.0f, 0.0f);
-		D3DXVec3TransformCoord(&m_posV, &pos, &m_mtxWorld);
+		D3DXVec3TransformCoord(&m_posV, &m_posVOffset, &m_mtxWorld);
 		D3DXVECTOR3 vec = m_posR - m_posV;
 		D3DXVec3Normalize(&vec, &vec);
 		D3DXVECTOR3 rightAngle = D3DXVECTOR3(vec.z, vec.y, vec.x * -1);
@@ -535,6 +533,8 @@ void CCamera::Move(void)
 void CCamera::Zoom()
 {// マウス情報の取得
 	CMouse *pMouse = CApplication::GetMouse();
+
+	m_posVOffset.z += (float)pMouse->GetMouseWheel() * 1.0f;
 }
 
 

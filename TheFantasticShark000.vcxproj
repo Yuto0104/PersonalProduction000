@@ -192,6 +192,7 @@
     <ClInclude Include="title.h" />
     <ClInclude Include="wave_mesh.h" />
     <ClInclude Include="weapon_obj.h" />
+    <ClInclude Include="wire.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp" />

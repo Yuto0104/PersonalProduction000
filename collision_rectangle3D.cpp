@@ -51,6 +51,8 @@ CCollision_Rectangle3D::CCollision_Rectangle3D()
 	m_pLine = nullptr;								// ライン情報
 	lineCol = D3DXCOLOR(1.0f,0.0f,0.0f,1.0f);		// ラインの色
 #endif // _DEBUG
+
+	EState m_state = STATE_NONE;			// 当たった場所
 }
 
 //=============================================================================
@@ -199,6 +201,60 @@ bool CCollision_Rectangle3D::Collision(CObject::EObjectType objeType, bool bExtr
 }
 
 //=============================================================================
+// 当たり判定
+// Author : 唐﨑結斗
+// 概要 : 当たり判定
+//=============================================================================
+bool CCollision_Rectangle3D::Collision(CObject::EObjectType objeType)
+{
+#ifdef _DEBUG
+	lineCol = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
+#endif // _DEBUG
+
+	// 先頭インスタンスの取得
+	CCollision *pCollision = CCollision::GetTop();
+	SetCollidedObj();
+	bool bCollision = false;
+
+	if (pCollision != nullptr)
+	{
+		while (pCollision)
+		{// 現在のオブジェクトの次のオブジェクトを保管
+			CCollision *pCollisionNext = pCollision->GetNext();
+			CObject::EObjectType myObjeType = pCollision->GetParent()->GetObjType();
+
+			if (myObjeType == objeType
+				&& pCollision != this
+				&& pCollision->GetUseFlag()
+				&& !pCollision->GetDeathFlag())
+			{
+				switch (pCollision->GetType())
+				{
+				case CCollision::TYPE_RECTANGLE3D:
+				case CCollision::TYPE_SPHERE:
+					bCollision = ToRectangle(pCollision, true);
+					break;
+
+				default:
+					assert(false);
+					break;
+				}
+			}
+
+			if (bCollision)
+			{// 当たったオブジェクトの設定
+				SetCollidedObj(pCollision->GetParent());
+			}
+
+			// 現在のオブジェクトの次のオブジェクトを更新
+			pCollision = pCollisionNext;
+		}
+	}
+
+	return bCollision;
+}
+
+//=============================================================================
 // 矩形との当たり判定
 // Author : 唐﨑結斗
 // 概要 : 矩形との当たり判定
@@ -216,6 +272,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 	// 目標の情報取得
 	D3DXVECTOR3 posTarget = pTarget->GetParent()->GetPos() + pTarget->GetPos();
 	D3DXVECTOR3 sizeTarget = pTarget->GetSize() / 2.0f;
+	m_state = STATE_NONE;
 
 	if ((pos.z - size.z) < (posTarget.z + sizeTarget.z)
 		&& (pos.z + size.z) > (posTarget.z - sizeTarget.z)
@@ -235,6 +292,8 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 		if ((posOld.y + size.y) <= (posTarget.y - sizeTarget.y)
 			&& (pos.y + size.y) > (posTarget.y - sizeTarget.y))
 		{
+			m_state = STATE_Y;
+
 			if (bExtrude)
 			{
 				pos.y = posTarget.y - sizeTarget.y - size.y;
@@ -243,6 +302,8 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 		if ((posOld.y - size.y) >= (posTarget.y + sizeTarget.y)
 			&& (pos.y - size.y) < (posTarget.y + sizeTarget.y))
 		{
+			m_state = STATE_Y;
+
 			if (bExtrude)
 			{
 				pos.y = posTarget.y + sizeTarget.y + size.y;
@@ -258,6 +319,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 			if ((posOld.x + size.x) <= (posTarget.x - sizeTarget.x)
 				&& (pos.x + size.x) > (posTarget.x - sizeTarget.x))
 			{// モデル内にいる(Z軸)
+				m_state = STATE_Z;
 				if (bExtrude)
 				{
 					pos.x = posTarget.x - sizeTarget.x - size.x;
@@ -266,6 +328,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 			if ((posOld.x - size.x) >= (posTarget.x + sizeTarget.x)
 				&& (pos.x - size.x) < (posTarget.x + sizeTarget.x))
 			{// モデル内にいる(Z軸)
+				m_state = STATE_Z;
 				if (bExtrude)
 				{
 					pos.x = posTarget.x + sizeTarget.x + size.x;
@@ -278,6 +341,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 			if ((posOld.z + size.z) <= (posTarget.z - sizeTarget.z)
 				&& (pos.z + size.z) > (posTarget.z - sizeTarget.z))
 			{// モデル内にいる(X軸)
+				m_state = STATE_X;
 				if (bExtrude)
 				{
 					pos.z = posTarget.z - sizeTarget.z - size.z;
@@ -286,6 +350,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 			if ((posOld.z - size.z) >= (posTarget.z + sizeTarget.z)
 				&& (pos.z - size.z) < (posTarget.z + sizeTarget.z))
 			{// モデル内にいる(X軸)
+				m_state = STATE_Z;
 				if (bExtrude)
 				{
 					pos.z = posTarget.z + sizeTarget.z + size.z;

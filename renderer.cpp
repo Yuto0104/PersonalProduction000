@@ -184,11 +184,9 @@ void CRenderer::Draw()
 		m_pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 		m_pD3DDevice->SetRenderState(D3DRS_ALPHAREF, 0x01);
 
-		// ƒJƒƒ‰‚Ìİ’è
-		CApplication::GetCamera()->Set();
-
 		// •`‰æˆ—
-		CSuper::DrawAll();
+		CSuper::DrawAll(CSuper::TYPE_MAP);
+		CSuper::DrawAll(CSuper::TYPE_GAME);
 
 		// “–‚½‚è”»’è‚Ì•`‰æ
 		CCollision::DrawAll();

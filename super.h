@@ -58,12 +58,28 @@ public:
 	};
 
 	//--------------------------------------------------------------------
+	// 描画タイプ
+	// Author : 唐﨑結斗
+	// 概要 : 描画タイプ
+	//--------------------------------------------------------------------
+	enum DRAW_TYPE
+	{
+		TYPE_ALL = 0,			// すべて
+		TYPE_GAME,				// ゲーム
+		TYPE_MAP,				// マップ
+		MAX_TYPE				// 最大数
+	};
+
+	//--------------------------------------------------------------------
 	// 静的メンバ関数
 	//--------------------------------------------------------------------
-	static void ReleaseAll(bool bPermanent);	// すべてのオブジェクトの解放
-	static void UpdateAll();					// すべてのオブジェクトの更新
-	static void DrawAll();						// すべてのオブジェクトの描画
-	static void ReleaseListAll();				// すべてのオブジェクトのリスト解除
+	static void ReleaseAll(bool bPermanent);										// すべてのオブジェクトの解放
+	static void UpdateAll();														// すべてのオブジェクトの更新
+	static void DrawAll();															// すべてのオブジェクトの描画
+	static void DrawAll(DRAW_TYPE EDrawType);										// すべてのオブジェクトの描画
+	static void ReleaseListAll();													// すべてのオブジェクトのリスト解除
+	static CSuper *GetTop(int nPriority) { return m_pTop[nPriority]; }				// 先頭オブジェクトへのポインタの取得
+	static CSuper *GetCurrent(int nPriority) { return m_pCurrent[nPriority]; }		// 現在の(一番後ろ)オブジェクトへのポインタの取得
 
 	//--------------------------------------------------------------------
 	// コンストラクタとデストラクタ
@@ -79,8 +95,12 @@ public:
 	virtual void Update() = 0;													// 更新
 	virtual void Draw() = 0;													// 描画
 	void SetElement(const EElementType EElement) { m_EElement = EElement; }		// 要素の設定
+	void SetDrawType(DRAW_TYPE EDrawType) { m_EDrawType = EDrawType; }			// 描画方法の設定
 	void SetPermanent(bool bPermanent) { m_bPermanent = bPermanent; }			// シーン生存フラグの設定
+	CSuper *GetPrev() { return m_pPrev; }										// 前のオブジェクト
+	CSuper *GetNext() { return m_pNext; }										// 前のオブジェクト
 	EElementType GetElement() { return m_EElement; }							// 要素の取得
+	DRAW_TYPE GetDrawType() { return m_EDrawType; }								// 描画方法のゲッター
 	bool GetPermanent() { return m_bPermanent; }								// シーン生存フラグの取得
 	bool GetFlagDeath() { return m_bDeath; }									// 死亡フラグの取得
 
@@ -106,6 +126,7 @@ private:
 	CSuper *m_pPrev;				// 前のオブジェクトへのポインタ
 	CSuper *m_pNext;				// 次のオブジェクトへのポインタ
 	EElementType m_EElement;		// 要素
+	DRAW_TYPE m_EDrawType;			// 描画方法
 	int	 m_nLevPriority;			// プライオリティのレベル
 	bool m_bPermanent;				// シーン生存フラグ
 	bool m_bDeath;					// 死亡フラグ

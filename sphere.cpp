@@ -75,7 +75,10 @@ HRESULT CSphere::Init()
 	m_fRadius = 50.0f;
 
 	// テクスチャの設定
-	LoadTex(5);
+	LoadTex(-1);
+
+	// オブジェクトタイプの設定
+	SetObjType(CObject::OBJETYPE_MESH);
 
 	return S_OK;
 }

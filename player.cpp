@@ -19,6 +19,7 @@
 #include "application.h"
 #include "camera.h"
 #include "keyboard.h"
+#include "mouse.h"
 #include "calculation.h"
 #include "move.h"
 #include "debug_proc.h"
@@ -29,6 +30,13 @@
 #include "model_obj.h"
 #include "weapon_obj.h"
 #include "motion_enemy.h"
+#include "wire.h"
+
+//--------------------------------------------------------------------
+// 静的メンバ変数の定義
+//--------------------------------------------------------------------
+const float CPlayer::fSPEED = 1.0f;
+const float CPlayer::fJAMP = 30.0f;
 
 //=============================================================================
 // インスタンス生成
@@ -64,9 +72,11 @@ m_pCollisionRectangle3D(nullptr),
 m_pAttack(nullptr),
 m_pColliAttack(nullptr),
 m_pMyWeapon(nullptr),
+m_pWire(nullptr),
 m_EAction(NEUTRAL_ACTION),
 m_rotDest(D3DXVECTOR3(0.0f,0.0f,0.0f)),
 m_fSpeed(0.0f),
+m_fGravity(0.0f),
 m_nNumMotion(0),
 m_nNumHandParts(0)
 {
@@ -99,7 +109,7 @@ HRESULT CPlayer::Init()
 	// 移動クラスのメモリ確保
 	m_pMove = new CMove;
 	assert(m_pMove != nullptr);
-	m_pMove->SetMoving(1.0f, 5.0f, 0.5f, 0.1f);
+	m_pMove->SetMoving(fSPEED, 100.0f, 0.5f, 0.1f);
 
 	// 軌跡の設定
 	m_pOrbit = COrbit::Create();
@@ -123,6 +133,9 @@ HRESULT CPlayer::Init()
 	m_pColliAttack->SetParent(m_pAttack);
 	m_pColliAttack->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 	m_pColliAttack->SetSize(D3DXVECTOR3(10.0f, 10.0f, 10.0f));
+
+	// ワイヤー
+	m_pWire = CWire::Create();
 
 	return E_NOTIMPL;
 }
@@ -169,6 +182,12 @@ void CPlayer::Uninit()
 		m_pColliAttack = nullptr;
 	}
 
+	if (m_pWire != nullptr)
+	{// 終了処理
+		m_pWire->Uninit();
+		m_pWire = nullptr;
+	}
+
 	// 終了
 	CMotionModel3D::Uninit();
 
@@ -184,6 +203,9 @@ void CPlayer::Uninit()
 void CPlayer::Update()
 {// キーボードの取得
 	CKeyboard *pKeyboard = CApplication::GetKeyboard();
+
+	// マウスの取得
+	CMouse *pMouse = CApplication::GetMouse();
 
 	// モーション情報の取得
 	CMotion *pMotion = CMotionModel3D::GetMotion();
@@ -204,34 +226,87 @@ void CPlayer::Update()
 		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &mtxParts);
 	}
 	
-	if (pKeyboard->GetTrigger(DIK_RETURN)
-		&& pMotion != nullptr)
+	if (pMouse->GetTrigger(CMouse::MOUSE_KEY_LEFT))
 	{// 攻撃
-		if (m_pMyWeapon == nullptr)
-		{
-			m_EAction = ATTACK_ACTION;
-		}
-		else
-		{
-			switch (m_pMyWeapon->GetWeaponType())
-			{
-			case CWeaponObj::WEAPONTYPE_KNIFE:
-				m_EAction = KNIFE_ATTACK_ACTION;
-				break;
-
-			default:
-				assert(false);
-				break;
-			}
-		}
-
-		pMotion->SetNumMotion(m_EAction);
+		Attack();
 	}
 
-	// 移動
-	pos += Move();
+	if (pKeyboard->GetTrigger(DIK_SPACE))
+	{// ジャンプ
+		Jump();
+	}
 
-	pos.y -= CCalculation::Gravity();
+	if (m_pWire->GetTargetObjType() == CObject::OBJTYPE_3DMODEL)
+	{
+		m_pWire->SetWireMode(CWire::MODE_HANGING);
+		m_pWire->SetHanging();
+		m_pWire->SetRotVec(D3DXVECTOR3(1.0f, 0.0f, 0.0f));
+	}
+
+	if (pKeyboard->GetTrigger(DIK_F)
+		&& m_pWire->GetWireMode() == CWire::MODE_STOP)
+	{// ワイヤーの射出
+		m_pWire->SetWireMode(CWire::MODE_FIRING);
+		D3DXVECTOR3 vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		D3DXVECTOR3 rot = GetRot();
+		rot.x = CCalculation::RotNormalization(rot.x + D3DX_PI * -0.5f);
+		vec.z = sinf(rot.x) * cosf(rot.y);
+		vec.x = sinf(rot.x) * sinf(rot.y);
+		vec.y = cosf(rot.x);
+		D3DXVec3Normalize(&vec, &vec);
+		m_pWire->SetMoveVec(vec);
+	}
+	else if (pKeyboard->GetTrigger(DIK_F)
+		&& m_pWire->GetWireMode() == CWire::MODE_FIRING)
+	{
+		m_pWire->SetWireMode(CWire::MODE_ATTRACT);
+		D3DXVECTOR3 vec = m_pWire->GetStart()->GetPos() - m_pWire->GetGoal()->GetPos();
+		m_pWire->SetMoveVec(-vec);
+		m_pMove->SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	}
+
+	// 重力の設定
+	m_fGravity -= CCalculation::Gravity();
+
+	if (m_pWire->GetWireMode() != CWire::MODE_ATTRACT
+		&& m_pWire->GetWireMode() != CWire::MODE_HANGING)
+	{// 移動
+		pos.y += m_fGravity;
+		pos += Move();
+	}
+	else if (m_pWire->GetWireMode() == CWire::MODE_HANGING)
+	{
+		// カメラ情報の取得
+		CCamera *pCamera = CApplication::GetCamera();
+
+		// 移動方向の算出
+		m_rotDest.y = pCamera->GetRot().y - D3DX_PI;
+
+		// 移動方向の正規化
+		m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y);
+
+		// 目的の向きの補正
+		if (m_rotDest.y - rot.y >= D3DX_PI)
+		{// 移動方向の正規化
+			m_rotDest.y -= D3DX_PI * 2;
+		}
+		else if (m_rotDest.y - rot.y <= -D3DX_PI)
+		{// 移動方向の正規化
+			m_rotDest.y += D3DX_PI * 2;
+		}
+
+		m_fGravity = 0.0f;
+
+		D3DXVECTOR3 move = m_pMove->GetMove();
+		move.y = 0.0f;
+		m_pMove->SetMove(move);
+
+		pos += m_pWire->GetMoveing();
+	}
+	else
+	{// 移動
+		pos += m_pWire->GetMove()->GetMove();
+	}
 
 	// 回転
 	Rotate();
@@ -270,6 +345,30 @@ void CPlayer::Update()
 	m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_NONE, true);
 	m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_ENEMY, true);
 
+	if (m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL, true))
+	{
+		CCollision_Rectangle3D::EState state = m_pCollisionRectangle3D->GetState();
+
+		if (state == CCollision_Rectangle3D::STATE_Y)
+		{
+			m_fGravity = 0.0f;
+
+			D3DXVECTOR3 move = m_pMove->GetMove();
+			move.y = 0.0f;
+			m_pMove->SetMove(move);
+		}
+
+		if ((state == CCollision_Rectangle3D::STATE_X
+			|| state == CCollision_Rectangle3D::STATE_Y
+			|| state == CCollision_Rectangle3D::STATE_Z)
+			&& m_pWire->GetWireMode() == CWire::MODE_HANGING)
+		{
+			m_pWire->SetWireMode(CWire::MODE_STOP);
+		}
+	}
+
+	m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL);
+
 	// 武器との当たり判定
 	bool bCollisionWeapon = m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_WEAPON, false);
 
@@ -279,16 +378,39 @@ void CPlayer::Update()
 		GetWeapon();
 	}
 
-	if (pMotion != nullptr
-		&& m_pMyWeapon == nullptr)
+	if (pMotion != nullptr)
 	{// 手のオブジェクトの位置
 		CParts *pHand = pMotion->GetParts(m_nNumHandParts);
 		D3DXMATRIX mtxParts = pHand->GetMtxWorld();
 		D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &mtxParts);
-		m_pAttack->SetPos(pos);
+
+		if (m_pMyWeapon == nullptr)
+		{
+			m_pAttack->SetPos(pos);
+		}
+
+		switch (m_pWire->GetWireMode())
+		{
+		case CWire::MODE_STOP:
+			// ワイヤーの位置の設定
+			m_pWire->SetPos(pos);
+			break;
+
+		case CWire::MODE_FIRING:
+		case CWire::MODE_ATTRACT:
+			m_pWire->GetStart()->SetPos(pos);
+			break;
+
+		case CWire::MODE_PULL:
+			break;
+
+		default:
+			break;
+		}
 	}
-	else if (pMotion != nullptr
+	
+	if (pMotion != nullptr
 		&& m_pMyWeapon != nullptr)
 	{
 		D3DXMATRIX mtxParts = m_pMyWeapon->GetMtxWorld();
@@ -309,7 +431,7 @@ void CPlayer::Update()
 			CMotionEnemy *pTarget = (CMotionEnemy*)m_pColliAttack->GetCollidedObj();
 
 			// 攻撃力の設定
-			int nAttack = FIST_ATTACK;
+			int nAttack = nFIST_ATTACK;
 
 			if (m_pMyWeapon != nullptr)
 			{// 武器を装備している
@@ -320,11 +442,16 @@ void CPlayer::Update()
 			pTarget->Hit(nAttack);
 		}
 	}
-	
 
 	// メッシュの当たり判定
-	CMesh3D *pMesh = CGame::GetMesh();
-	pMesh->Collison(this);
+	if (CMesh3D::CollisonMesh(this))
+	{
+		m_fGravity = 0.0f;
+
+		D3DXVECTOR3 move = m_pMove->GetMove();
+		move.y = 0.0f;
+		m_pMove->SetMove(move);
+	}
 	
 	// 位置の取得
 	pos = GetPos();
@@ -427,6 +554,22 @@ D3DXVECTOR3 CPlayer::Move()
 		// 角度の正規化
 		m_rotDest.y -= D3DX_PI;
 
+		// 移動方向の正規化
+		m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y);
+
+		// 向きの取得
+		D3DXVECTOR3 rot = GetRot();
+
+		// 目的の向きの補正
+		if (m_rotDest.y - rot.y >= D3DX_PI)
+		{// 移動方向の正規化
+			m_rotDest.y -= D3DX_PI * 2;
+		}
+		else if (m_rotDest.y - rot.y <= -D3DX_PI)
+		{// 移動方向の正規化
+			m_rotDest.y += D3DX_PI * 2;
+		}
+
 		if (m_EAction == NEUTRAL_ACTION
 			|| m_EAction == KNIFE_NEUTRAL_ACTION)
 		{// 移動
@@ -456,7 +599,7 @@ D3DXVECTOR3 CPlayer::Move()
 	}
 
 	// 移動情報の計算
-	m_pMove->Moving(move);
+ 	m_pMove->Moving(move);
 
 	// 移動情報の取得
 	D3DXVECTOR3 moveing = m_pMove->GetMove();
@@ -490,19 +633,6 @@ D3DXVECTOR3 CPlayer::Move()
 	// デバック表示
 	CDebugProc::Print("移動ベクトル : %.3f\n", m_pMove->GetMoveLength());
 
-	// 向きの取得
-	D3DXVECTOR3 rot = GetRot();
-
-	// 目的の向きの補正
-	if (m_rotDest.y - rot.y >= D3DX_PI)
-	{// 移動方向の正規化
-		m_rotDest.y -= D3DX_PI * 2;
-	}
-	else if (m_rotDest.y - rot.y <= -D3DX_PI)
-	{// 移動方向の正規化
-		m_rotDest.y += D3DX_PI * 2;
-	}
-
 	return moveing;
 }
 
@@ -524,6 +654,57 @@ void CPlayer::Rotate()
 
 	// 向きの設定
 	SetRot(rot);
+}
+
+//=============================================================================
+// ジャンプ
+// Author : 唐﨑結斗
+// 概要 : ジャンプする
+//=============================================================================
+void CPlayer::Jump()
+{
+	// 移動情報の計算
+	D3DXVECTOR3 move = m_pMove->GetMove();
+	move.y = 0.0f;
+	m_fGravity = 0.0f;
+	m_pMove->SetMove(move);
+	m_pMove->SetSpeed(fJAMP);
+	m_pMove->Moving(D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+	m_pMove->SetSpeed(fSPEED);
+}
+
+//=============================================================================
+// 攻撃
+// Author : 唐﨑結斗
+// 概要 : 攻撃する
+//=============================================================================
+void CPlayer::Attack()
+{
+	// モーション情報の取得
+	CMotion *pMotion = CMotionModel3D::GetMotion();
+
+	if (pMotion != nullptr)
+	{
+		if (m_pMyWeapon == nullptr)
+		{
+			m_EAction = ATTACK_ACTION;
+		}
+		else
+		{
+			switch (m_pMyWeapon->GetWeaponType())
+			{
+			case CWeaponObj::WEAPONTYPE_KNIFE:
+				m_EAction = KNIFE_ATTACK_ACTION;
+				break;
+
+			default:
+				assert(false);
+				break;
+			}
+		}
+
+		pMotion->SetNumMotion(m_EAction);
+	}
 }
 
 //=============================================================================

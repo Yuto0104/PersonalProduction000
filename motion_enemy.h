@@ -36,6 +36,11 @@ class CMotionEnemy : public CMotionModel3D
 {
 public:
 	//--------------------------------------------------------------------
+	// 定数定義
+	//--------------------------------------------------------------------
+	static const float fFRICTION;		// 減衰係数
+
+	//--------------------------------------------------------------------
 	// モーションエネミーのアクションの列挙型
 	//--------------------------------------------------------------------
 	enum ACTION_TYPE
@@ -68,6 +73,7 @@ public:
 	void SetSpeed(const float fSpeed) { m_fSpeed = fSpeed; }		// 移動速度の設定
 	void SetLife(const int nLife) { m_nLife = nLife; }				// 体力の設定
 	int GetLife() { return m_nLife; }								// 体力の表示
+	CMove *GetMove() { return m_pMove; }							// 移動情報の取得
 
 private:
 	//--------------------------------------------------------------------
@@ -84,6 +90,7 @@ private:
 	ACTION_TYPE					m_EAction;				// アクションタイプ
 	D3DXVECTOR3					m_move;					// 移動ベクトル
 	D3DXVECTOR3					m_rotDest;				// 目的の向き
+	float						m_fGravity;				// 重力
 	float						m_fSpeed;				// 移動速度	
 	int							m_nNumMotion;			// 現在のモーション番号
 	int							m_nLife;				// 体力

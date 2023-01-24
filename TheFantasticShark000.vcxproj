@@ -166,6 +166,8 @@
     <ClInclude Include="light.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="manager.h" />
+    <ClInclude Include="map_manager.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="model3D.h" />
     <ClInclude Include="model_obj.h" />
@@ -210,6 +212,8 @@
     <ClCompile Include="light.cpp" />
     <ClCompile Include="line.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="manager.cpp" />
+    <ClCompile Include="map_manager.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="model3D.cpp" />
     <ClCompile Include="model_obj.cpp" />
@@ -236,6 +240,7 @@
     <ClCompile Include="title.cpp" />
     <ClCompile Include="wave_mesh.cpp" />
     <ClCompile Include="weapon_obj.cpp" />
+    <ClCompile Include="wire.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

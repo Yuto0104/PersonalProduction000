@@ -22,6 +22,7 @@
 //--------------------------------------------------------------------
 LPD3DXFONT CDebugProc::m_pFont = nullptr;			// ƒtƒHƒ“ƒgî•ñ
 char CDebugProc::m_aStr[0xfff] = {};				// “o˜^•¶š—ñ
+bool CDebugProc::m_bDraw = true;					// •`‰æ‚ğs‚¤‚©
 
 //=============================================================================
 // •¶š—ñ‚Ì“o˜^
@@ -40,7 +41,10 @@ void CDebugProc::Print(const char *pFormat, ...)
 	va_end(args);
 
 #ifdef _DEBUG
-	strcat(&m_aStr[0], &aStrCpy[0]);
+	if (m_bDraw)
+	{
+		strcat(&m_aStr[0], &aStrCpy[0]);
+	}
 #endif // DEBUG
 }
 

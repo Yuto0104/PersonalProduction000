@@ -15,6 +15,7 @@
 #include "debug_proc.h"
 #include "renderer.h"
 #include "application.h"
+#include "camera.h"
 
 //*****************************************************************************
 // 静的メンバ変数宣言
@@ -134,6 +135,62 @@ void CSuper::DrawAll()
 }
 
 //=============================================================================
+// すべてのインスタンスの描画
+// Author : 唐﨑結斗
+// 概要 : 使用されてるインスタンスの描画処理を呼び出す
+//=============================================================================
+void CSuper::DrawAll(DRAW_TYPE EDrawType)
+{
+	// カメラポインタ
+	CCamera *pCamera = nullptr;
+
+	switch (EDrawType)
+	{
+	case CSuper::TYPE_GAME:
+		pCamera = CApplication::GetCamera();
+		break;
+
+	case CSuper::TYPE_MAP:
+		pCamera = CApplication::GetMapCamera();
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	// カメラの描画
+	pCamera->Set();
+
+	for (int nCntPriority = 0; nCntPriority < MAX_LEVEL; nCntPriority++)
+	{
+		if (m_pTop[nCntPriority] != nullptr)
+		{// 変数宣言
+			CSuper *pSuper = m_pTop[nCntPriority];
+
+			while (pSuper)
+			{// 現在のオブジェクトの次のオブジェクトを保管
+				CSuper *pSuperNext = pSuper->m_pNext;
+				DRAW_TYPE EMyDrawType = pSuper->GetDrawType();
+
+				if (!pSuper->m_bDeath
+					&& (EMyDrawType == TYPE_ALL
+					|| EMyDrawType == EDrawType))
+				{// オブジェクトの描画
+					pSuper->Draw();
+				}
+
+				// 現在のオブジェクトの次のオブジェクトを更新
+				pSuper = pSuperNext;
+			}
+		}
+	}
+
+	// すべてのリスト解除
+	ReleaseListAll();
+}
+
+//=============================================================================
 // すべてのオブジェクトのリスト解除
 // Author : 唐﨑結斗
 // 概要 : すべてのオブジェクトのリスト解除を呼び出す
@@ -169,6 +226,8 @@ void CSuper::ReleaseListAll()
 //=============================================================================
 CSuper::CSuper(int nPriority/* = PRIORITY_LEVEL0*/) : m_pPrev(nullptr),			// 前のオブジェクトへのポインタ
 m_pNext(nullptr),																// 次のオブジェクトへのポインタ
+m_EElement(ELEMENT_NONE),														// 要素
+m_EDrawType(TYPE_ALL),															// 描画方法
 m_nLevPriority(nPriority),														// プライオリティのレベル
 m_bDeath(false)																	// 死亡フラグ
 {

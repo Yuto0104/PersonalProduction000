@@ -41,6 +41,56 @@ CMesh3D * CMesh3D::Create(void)
 }
 
 //=============================================================================
+// 当たり判定
+// Author : 唐﨑結斗
+// 概要 : 当たり判定
+//=============================================================================
+bool CMesh3D::CollisonMesh(CObject *pTarget)
+{
+	bool bCollison = false;
+
+	for (int nCntPriority = 0; nCntPriority < MAX_LEVEL; nCntPriority++)
+	{
+		// 情報の取得
+		CSuper *pTop = CSuper::GetTop(nCntPriority);
+		CSuper *pCurrent = CSuper::GetCurrent(nCntPriority);
+
+		if (pTop != nullptr)
+		{// 変数宣言
+			CSuper *pSuper = pTop;
+
+			while (pSuper)
+			{// 現在のオブジェクトの次のオブジェクトを保管
+				CSuper *pSuperNext = pSuper->GetNext();
+
+				if (!pSuper->GetFlagDeath()
+					&& pSuper->GetElement() == ELEMENT_OBJECT)
+				{
+					// オブジェクトクラスにキャスト
+					CObject *pObject = (CObject*)pSuper;
+
+					if (pObject->GetObjType() == CObject::OBJETYPE_MESH)
+					{
+						// メッシュへキャスト
+						CMesh3D *pMesh = (CMesh3D*)pObject;
+
+						if (pMesh->GetUseCollison())
+						{// 当たり判定を行う
+							bCollison = pMesh->Collison(pTarget);
+						}
+					}
+				}
+
+				// 現在のオブジェクトの次のオブジェクトを更新
+				pSuper = pSuperNext;
+			}
+		}
+	}
+
+	return bCollison;
+}
+
+//=============================================================================
 // コンストラクタ
 // Author : 唐﨑結斗
 // 概要 : インスタンス生成時に行う処理
@@ -66,6 +116,7 @@ CMesh3D::CMesh3D()
 	m_nIndex = 0;										// インデックス数
 	m_bSplitTex = false;								// 分割するかどうか
 	m_bScrollTex = false;								// テクスチャがスクロールするかどうか
+	m_bUseCollison = false;								// 当たり判定を使うか否か
 }
 
 //=============================================================================
@@ -112,6 +163,9 @@ HRESULT CMesh3D::Init()
 	// 法線の計算
 	Normal();
 
+	// オブジェクトタイプの設定
+	SetObjType(CObject::OBJETYPE_MESH);
+
 	return S_OK;
 }
 
@@ -149,11 +203,6 @@ void CMesh3D::Uninit()
 //=============================================================================
 void CMesh3D::Update()
 {
-	CDebugProc::Print("分割数 | X : %d | Z : %d |\n", m_block.x, m_block.y);
-	CDebugProc::Print("頂点数 : %d\n", m_nVtx);
-	CDebugProc::Print("ポリゴン数 : %d\n", m_nPolygon);
-	CDebugProc::Print("インデックス数 : %d\n", m_nIndex);
-
 	TexScroll();
 }
 

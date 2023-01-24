@@ -42,6 +42,7 @@ CCamera::CCamera()
 	m_mtxWorld = {};								// ワールドマトリックス
 	m_mtxProj = {};									// プロジェクションマトリックス
 	m_mtxView = {};									// ビューマトリックス
+	m_viewport = {};								// ビューポート
 	m_pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);			// 位置
 	m_posV = D3DXVECTOR3(0.0f, 0.0f, 0.0f);			// 視点
 	m_posR = D3DXVECTOR3(0.0f, 0.0f, 0.0f);			// 注視点
@@ -99,7 +100,10 @@ HRESULT CCamera::Init()
 	// 移動クラス(角度)のメモリ確保
 	m_pRoll = new CMove;
 	assert(m_pRoll != nullptr);
-	m_pRoll->SetMoving(0.3f, 5.0f, 0.0f, 0.1f);
+	m_pRoll->SetMoving(0.01f, 5.0f, 0.0f, 0.1f);
+
+	// ビューポートの大きさ設定
+	SetViewSize(0, 0, CRenderer::SCREEN_WIDTH, CRenderer::SCREEN_HEIGHT);
 
 	return S_OK;
 }
@@ -165,11 +169,11 @@ void CCamera::Set()
 	// ワールドマトリックスの初期化
 	D3DXMatrixIdentity(&m_mtxView);			// 行列初期化関数
 
-	// 上方向ベクトルの算出
-	D3DXVECTOR3 rotAdd = m_rot + D3DXVECTOR3(D3DX_PI * 0.5f, D3DX_PI * 0.5f, D3DX_PI * 0.5f);
-	rotAdd.x = CCalculation::RotNormalization(rotAdd.x);
-	rotAdd.y = CCalculation::RotNormalization(rotAdd.y);
-	rotAdd.z = CCalculation::RotNormalization(rotAdd.z);
+	//// 上方向ベクトルの算出
+	//D3DXVECTOR3 rotAdd = m_rot + D3DXVECTOR3(D3DX_PI * 0.5f, D3DX_PI * 0.5f, D3DX_PI * 0.5f);
+	//rotAdd.x = CCalculation::RotNormalization(rotAdd.x);
+	//rotAdd.y = CCalculation::RotNormalization(rotAdd.y);
+	//rotAdd.z = CCalculation::RotNormalization(rotAdd.z);
 
 	// ビューマトリックスの作成
 	D3DXMatrixLookAtLH(&m_mtxView,
@@ -179,6 +183,9 @@ void CCamera::Set()
 
 	// ワールドマトリックスの設定
 	pDevice->SetTransform(D3DTS_VIEW, &m_mtxView);
+
+	// ビューポートの適応
+	pDevice->SetViewport(&m_viewport);
 
 	// プロジェクションマトリックスの初期化
 	D3DXMatrixIdentity(&m_mtxProj);			// 行列初期化関数
@@ -305,6 +312,20 @@ void CCamera::SetTargetPosR(bool bUse)
 }
 
 //=============================================================================
+// ビューポートサイズの設定
+// Author : 唐﨑結斗
+// 概要 : 画面左上を0.0に画面サイズを設定
+//=============================================================================
+void CCamera::SetViewSize(DWORD X, DWORD Y, int fWidth, int fHeight)
+{
+	//引数を代入
+	m_viewport.X = X;					//ビューポートの左上X座標
+	m_viewport.Y = Y;					//ビューポートの左上Y座標
+	m_viewport.Width = fWidth;			//ビューポートの幅
+	m_viewport.Height = fHeight;		//ビューポートの高さ
+}
+
+//=============================================================================
 // マトリックス計算を行う
 // Author : 唐﨑結斗
 // 概要 : 
@@ -394,6 +415,7 @@ void CCamera::Rotate(void)
 
 	// 摩擦係数の計算
 	m_pRoll->Moving(rollDir);
+	rollDir = m_pRoll->GetMove();
 
 	// カメラの向きの正規化
 	rollDir.x = CCalculation::RotNormalization(rollDir.x);
@@ -401,7 +423,7 @@ void CCamera::Rotate(void)
 	rollDir.z = CCalculation::RotNormalization(rollDir.z);
 
 	// 回転
-	m_rot += m_pRoll->GetMove();
+	m_rot += rollDir;
 
 	if (m_rot.y < -D3DX_PI)
 	{// 向きが-D3DX_PI未満の時

@@ -34,6 +34,9 @@ public:
 		OBJETYPE_ENEMY,				// エネミー
 		OBJTYPE_3DMODEL,			// 3Dモデル
 		OBJETYPE_WEAPON,			// 武器
+		OBJETYPE_WIRE,				// ワイヤー
+		OBJETYPE_MESH,				// メッシュ
+		OBJETYPE_SKYBOX,			// スカイボックス
 		MAX_OBJTYPE,				// 種別の最大数
 	};
 

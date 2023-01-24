@@ -213,6 +213,12 @@
     <ClInclude Include="wire.h">
       <Filter>ヘッダー ファイル\Object\3D\Model</Filter>
     </ClInclude>
+    <ClInclude Include="manager.h">
+      <Filter>ヘッダー ファイル\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="map_manager.h">
+      <Filter>ヘッダー ファイル\Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp">
@@ -293,9 +299,6 @@
     <ClCompile Include="object3D.cpp">
       <Filter>ソース ファイル\Object\3D</Filter>
     </ClCompile>
-    <ClCompile Include="line.cpp">
-      <Filter>ソース ファイル\Object\3D</Filter>
-    </ClCompile>
     <ClCompile Include="object2D.cpp">
       <Filter>ソース ファイル\Object\2D</Filter>
     </ClCompile>
@@ -337,6 +340,18 @@
     </ClCompile>
     <ClCompile Include="weapon_obj.cpp">
       <Filter>ソース ファイル\Object\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="wire.cpp">
+      <Filter>ソース ファイル\Object\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="line.cpp">
+      <Filter>ソース ファイル\Object\3D\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="manager.cpp">
+      <Filter>ソース ファイル\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="map_manager.cpp">
+      <Filter>ソース ファイル\Manager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

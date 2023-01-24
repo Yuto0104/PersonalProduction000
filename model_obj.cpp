@@ -69,6 +69,8 @@ void CModelObj::LoadFile(const char *pFileName)
 				// モデルの設置
 				CModelObj *pModelObj = Create();
 				assert(pModelObj != nullptr);
+				CCollision_Rectangle3D *pCollision = pModelObj->GetCollision();
+				CModel3D *pModel = pModelObj->GetModel();
 
 				while (strstr(&aStr[0], "END_MODELSET") == NULL)
 				{
@@ -78,7 +80,7 @@ void CModelObj::LoadFile(const char *pFileName)
 					{// 一列読み込む
 						fgets(&aStr[0], sizeof(aStr), pFile);
 					}
-					else if (strstr(&aStr[0], "POS") != NULL)
+					else if (strcmp(&aStr[0], "POS") == 0)
 					{// モデルのファイル名の設定
 						D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 						fscanf(pFile, "%s", &aStr[0]);
@@ -104,6 +106,34 @@ void CModelObj::LoadFile(const char *pFileName)
 						fscanf(pFile, "%s", &aStr[0]);
 						fscanf(pFile, "%d", &nID);
 						pModelObj->SetType(nID);
+					}
+
+					if (strcmp(&aStr[0], "SHADOW") == 0)
+					{// キー数の読み込み
+						int nUse = 0;
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%d", &nUse);
+						pModel->SetShadow(nUse);
+					}
+
+					if (strcmp(&aStr[0], "COLLISION_POS") == 0)
+					{// キー数の読み込み
+						D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%f", &pos.x);
+						fscanf(pFile, "%f", &pos.y);
+						fscanf(pFile, "%f", &pos.z);
+						pCollision->SetPos(pos);
+					}
+
+					if (strcmp(&aStr[0], "COLLISION_SIZE") == 0)
+					{// キー数の読み込み
+						D3DXVECTOR3 size = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%f", &size.x);
+						fscanf(pFile, "%f", &size.y);
+						fscanf(pFile, "%f", &size.z);
+						pCollision->SetSize(size);
 					}
 				}
 

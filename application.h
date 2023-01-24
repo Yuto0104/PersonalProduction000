@@ -65,6 +65,7 @@ public:
 	static CMouse *GetMouse() { return m_pMouse; }										// マウスのゲッター
 	static CTexture *GetTexture() { return m_pTexture; }								// テクスチャのゲッター
 	static CCamera *GetCamera() { return m_pCamera; }									// カメラのゲッター
+	static CCamera *GetMapCamera() { return m_pMapCamera; }								// マップカメラのゲッター
 	static CLight *GetLight() { return m_pLight; }										// ライトの取得
 	static D3DXVECTOR3 ScreenCastWorld(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static D3DXVECTOR3 WorldCastScreen(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
@@ -99,6 +100,7 @@ private:
 	static CMouse *m_pMouse;					// マウスクラス
 	static CTexture *m_pTexture;				// テクスチャクラス
 	static CCamera *m_pCamera;					// ゲームカメラクラス
+	static CCamera *m_pMapCamera;				// マップカメラ
 	static SCENE_MODE m_mode;					// 現在のモードの格納
 	static SCENE_MODE m_nextMode;				// 次に設定するモード
 	static CSceneMode *pSceneMode;				// シーンモードを格納

@@ -24,6 +24,11 @@
 #include "camera.h"
 #include "parts.h"
 
+//--------------------------------------------------------------------
+// 静的メンバ変数の宣言
+//--------------------------------------------------------------------
+const float CMotionEnemy::fFRICTION = 0.1f;			// 減衰係数
+
 //=============================================================================
 // インスタンス生成
 // Author : 唐﨑結斗
@@ -56,6 +61,7 @@ CMotionEnemy::CMotionEnemy() : m_pMove(nullptr),
 m_pCollRectangle3D(nullptr),
 m_EAction(NEUTRAL_ACTION),
 m_rotDest(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),
+m_fGravity(0.0f),
 m_fSpeed(0.0f),
 m_nNumMotion(0),
 m_nLife(0),
@@ -88,7 +94,7 @@ HRESULT CMotionEnemy::Init()
 	// 移動クラスのメモリ確保
 	m_pMove = new CMove;
 	assert(m_pMove != nullptr);
-	m_pMove->SetMoving(1.0f, 5.0f, 0.5f, 0.1f);
+	m_pMove->SetMoving(1.0f, 100.0f, 0.5f, fFRICTION);
 
 	// 3D矩形の当たり判定の設定
 	m_pCollRectangle3D = CCollision_Rectangle3D::Create();
@@ -171,10 +177,12 @@ void CMotionEnemy::Update()
 	D3DXVECTOR3 pos = GetPos();
 	D3DXVECTOR3 rot = GetRot();
 
-	// 移動
-	pos += Move();
+	// 重力の設定
+	m_fGravity -= CCalculation::Gravity();
 
-	pos.y -= CCalculation::Gravity();
+	// 移動
+	pos.y += m_fGravity;
+	pos += Move();
 
 	// 回転
 	Rotate();
@@ -191,8 +199,14 @@ void CMotionEnemy::Update()
 	SetPos(pos);
 
 	// メッシュの当たり判定
-	CMesh3D *pMesh = CGame::GetMesh();
-	pMesh->Collison(this);
+	if (CMesh3D::CollisonMesh(this))
+	{
+		m_fGravity = 0.0f;
+
+		D3DXVECTOR3 move = m_pMove->GetMove();
+		move.y = 0.0f;
+		m_pMove->SetMove(move);
+	}
 
 	// 更新
 	CMotionModel3D::Update();
@@ -252,7 +266,13 @@ void CMotionEnemy::Hit(const int nAttack)
 //=============================================================================
 D3DXVECTOR3 CMotionEnemy::Move()
 {
-	return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	// 移動方向
+	D3DXVECTOR3 vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	// 移動情報の計算
+	m_pMove->Moving(vec);
+
+	return m_pMove->GetMove();
 }
 
 //=============================================================================

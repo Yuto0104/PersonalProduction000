@@ -27,6 +27,17 @@ class CCollision_Rectangle3D : public CCollision
 {
 public:
 	//--------------------------------------------------------------------
+	// 当たった場所の列挙型
+	//--------------------------------------------------------------------
+	enum EState
+	{
+		STATE_NONE = 0,		// 無し
+		STATE_X,			// X
+		STATE_Y,			// Y
+		STATE_Z,			// Z
+	};
+
+	//--------------------------------------------------------------------
 	// 静的メンバ関数
 	//--------------------------------------------------------------------
 	static CCollision_Rectangle3D *Create();			// インスタンスの生成
@@ -45,7 +56,9 @@ public:
 	void Update() override;														// 更新
 	void Draw() override;														// 描画
 	bool Collision(CObject::EObjectType objeType, bool bExtrude) override;		// 当たり判定	
+	bool Collision(CObject::EObjectType objeType);								// 当たり判定	
 	bool ToRectangle(CCollision *pTarget, bool bExtrude);						// 矩形との当たり判定
+	EState GetState() { return m_state; }										// 当たった場所の取得
 
 #ifdef _DEBUG
 	void SetLine();					// ラインの設定
@@ -59,6 +72,7 @@ private:
 	CLine **m_pLine;		// ライン情報
 	D3DXCOLOR lineCol;		// ラインの色
 #endif // _DEBUG
+	EState m_state;			// 当たった場所
 };
 
 #endif

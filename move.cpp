@@ -62,10 +62,14 @@ void CMove::SetMoving(float fSpeed, float fMaxSpeed, float fMinSpeed, float fFri
 //=============================================================================
 void CMove::Moving(const D3DXVECTOR3 &moveDir)
 {
-	if (moveDir.x != 0.0f || moveDir.y != 0.0f || moveDir.z != 0.0f)
+	// 正規化
+	D3DXVECTOR3 vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVec3Normalize(&vec, &moveDir);
+
+	if (vec.x != 0.0f || vec.y != 0.0f || vec.z != 0.0f)
 	{// 移動している
 	 // 速度の算出
-		m_move += moveDir * m_fSpeed;
+		m_move += vec * m_fSpeed;
 
 		// 速度リミッター
 		float speed = D3DXVec3Length(&m_move);
@@ -84,6 +88,20 @@ void CMove::Moving(const D3DXVECTOR3 &moveDir)
 	{// 速度を0に設定
 		m_move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	}
+}
+
+//=============================================================================
+// 移動方向の設定
+// Author : 唐﨑結斗
+// 概要 : 移動方向の設定
+//=============================================================================
+void CMove::SetMoveVec(const D3DXVECTOR3 vec)
+{
+	// 移動距離の設定
+	float fLength = sqrtf((m_move.x * m_move.x) + (m_move.y * m_move.y) + (m_move.z * m_move.z));
+
+	// 移動ベクトルの設定
+	m_move = vec * fLength;
 }
 
 

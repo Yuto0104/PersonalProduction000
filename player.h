@@ -29,6 +29,7 @@ class COrbit;
 class CCollision_Rectangle3D;
 class CModelObj;
 class CWeaponObj;
+class CWire;
 
 //=============================================================================
 // プレイヤークラス
@@ -41,7 +42,9 @@ public:
 	//--------------------------------------------------------------------
 	// 定数定義
 	//--------------------------------------------------------------------
-	static const unsigned int FIST_ATTACK = 1;
+	static const unsigned int nFIST_ATTACK = 1;
+	static const float fSPEED;
+	static const float fJAMP;
 
 	//--------------------------------------------------------------------
 	// プレイヤーのアクションの列挙型
@@ -86,6 +89,8 @@ private:
 	//--------------------------------------------------------------------
 	D3DXVECTOR3 Move();		// 移動
 	void Rotate();			// 回転
+	void Jump();			// ジャンプ
+	void Attack();			// 攻撃
 	void GetWeapon();		// 武器の取得
 		
 	//--------------------------------------------------------------------
@@ -97,10 +102,12 @@ private:
 	CModelObj					*m_pAttack;						// 攻撃オブジェクト情報
 	CCollision_Rectangle3D		*m_pColliAttack;				// 攻撃の当たり判定
 	CWeaponObj					*m_pMyWeapon;					// 武器のポインタ
+	CWire						*m_pWire;						// ワイヤー
 	ACTION_TYPE					m_EAction;						// アクションタイプ
 	D3DXVECTOR3					m_move;							// 移動ベクトル
 	D3DXVECTOR3					m_rotDest;						// 目的の向き
-	float						m_fSpeed;						// 移動速度	
+	float						m_fSpeed;						// 移動速度
+	float						m_fGravity;						// 重力
 	int							m_nNumMotion;					// 現在のモーション番号
 	int							m_nNumHandParts;				// 手のパーツ番号
 };

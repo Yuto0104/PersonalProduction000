@@ -106,7 +106,8 @@ public:
 	//--------------------------------------------------------------------
 	// 静的メンバ関数
 	//--------------------------------------------------------------------
-	static CMesh3D *Create(void);				// 2Dオブジェクトの生成
+	static CMesh3D *Create(void);					// 2Dオブジェクトの生成
+	static bool CollisonMesh(CObject *pTarget);		// 当たり判定
 
 	//--------------------------------------------------------------------
 	// コンストラクタとデストラクタ
@@ -144,6 +145,8 @@ public:
 	D3DXCOLOR GetCol() { return m_col; }											// 色の取得
 	D3DXVECTOR2 GetTex() { return m_tex; }											// テクスチャのゲッター
 	bool Collison(CObject *pTarget);												// 当たり判定
+	void SetUseCollison(bool bUseCollison) { m_bUseCollison = bUseCollison; }		// 当たり判定の使用状況の設定
+	bool GetUseCollison() { return m_bUseCollison; }								// 当たり判定の使用状況の取得
 
 protected:
 	//--------------------------------------------------------------------
@@ -184,6 +187,7 @@ private:
 	int								m_nIndex;							// インデックス数
 	bool							m_bSplitTex;						// テクスチャの分割するか
 	bool							m_bScrollTex;						// テクスチャをスクロールするかどうか
+	bool							m_bUseCollison;						// 当たり判定を使うか否か
 };
 
 #endif

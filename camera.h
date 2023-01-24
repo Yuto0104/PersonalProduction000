@@ -75,6 +75,7 @@ public:
 	void SetTargetPosR(bool bUse);
 	void SetViewing(const float fViewing) { m_fViewing = fViewing; }
 	void SetPosRDiff(const D3DXVECTOR2 posRDiff) { m_posRDiff = posRDiff; }
+	void SetViewSize(DWORD X, DWORD Y, int fWidth, int fHeight);
 	CObject *GetTargetPosR() { return m_pTargetPosR; }
 
 private:
@@ -95,6 +96,7 @@ private:
 	D3DXMATRIX			m_mtxWorld;			// ワールドマトリックス
 	D3DXMATRIX			m_mtxProj;			// プロジェクションマトリックス
 	D3DXMATRIX			m_mtxView;			// ビューマトリックス
+	D3DVIEWPORT9        m_viewport;			// ビューポート
 	D3DXVECTOR3			m_pos;				// 位置
 	D3DXVECTOR3			m_posV;				// 視点
 	D3DXVECTOR3			m_posR;				// 注視点

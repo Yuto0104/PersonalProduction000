@@ -45,6 +45,7 @@ CKeyboard *CApplication::m_pKeyboard = {};							// キーボードインスタンス
 CMouse *CApplication::m_pMouse = {};								// マウスインスタンス
 CTexture *CApplication::m_pTexture = nullptr;						// テクスチャインスタンス
 CCamera *CApplication::m_pCamera = nullptr;							// カメラインスタンス
+CCamera *CApplication::m_pMapCamera = nullptr;						// マップカメラ
 CApplication::SCENE_MODE CApplication::m_mode = MODE_NONE;			// 現在のモードの格納
 CApplication::SCENE_MODE CApplication::m_nextMode = MODE_GAME;		// 次のモードの格納
 CSceneMode *CApplication::pSceneMode = nullptr;						// シーンモードを格納
@@ -264,6 +265,7 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	m_pDebugProc = new CDebugProc;
 	m_pTexture = new CTexture;
 	m_pCamera = new CCamera;
+	m_pMapCamera = new CCamera;
 	m_pSound = new CSound;
 
 	// 入力デバイスのメモリ確保
@@ -298,6 +300,11 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	assert(m_pCamera != nullptr);
 	m_pCamera->Init();
 	m_pCamera->SetViewType(CCamera::TYPE_CLAIRVOYANCE);
+
+	// 初期化処理
+	assert(m_pMapCamera != nullptr);
+	m_pMapCamera->Init();
+	m_pMapCamera->SetViewType(CCamera::TYPE_PARALLEL);
 
 	// 初期化
 	assert(m_pDebugProc != nullptr);
@@ -403,6 +410,15 @@ void CApplication::Uninit()
 		m_pCamera = nullptr;
 	}
 
+	if (m_pMapCamera != nullptr)
+	{// 終了処理
+		m_pMapCamera->Uninit();
+
+		// メモリの解放
+		delete m_pMapCamera;
+		m_pMapCamera = nullptr;
+	}
+
 	if (m_pSound != nullptr)
 	{// 終了処理
 		m_pSound->Uninit();
@@ -432,12 +448,20 @@ void CApplication::Update()
 	m_pKeyboard->Update();
 	m_pMouse->Update();
 	m_pCamera->Update();
+	m_pMapCamera->Update();
 
 	m_pRenderer->Update();
 
 #ifdef _DEBUG
 	CDebugProc::Print("FPS : %d\n", GetFps());
 	CDebugProc::Print("現在のシーン : %d\n", (int)m_mode);
+
+	if (m_pKeyboard->GetTrigger(DIK_F1))
+	{
+		bool bDrawFlag = CDebugProc::GetDrawFlag();
+		bDrawFlag ^= 1;
+		CDebugProc::SetDrawFlag(bDrawFlag);
+	}
 
 	if (m_pKeyboard->GetTrigger(DIK_F2))
 	{

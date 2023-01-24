@@ -31,13 +31,16 @@
 #include "weapon_obj.h"
 #include "collision_rectangle3D.h"
 #include "debug_proc.h"
+#include "wire.h"
+#include "map_manager.h"
 
 //*****************************************************************************
 // 静的メンバ変数宣言
 //*****************************************************************************
 CPlayer *CGame::m_pPlayer = nullptr;					// プレイヤークラス
 CMesh3D *CGame::m_pMesh3D;								// メッシュクラス
-CMotionEnemy *CGame::m_pMotionModel3D;				// モーションモデルクラス
+CMotionEnemy *CGame::m_pMotionModel3D;					// モーションモデルクラス
+CWire *CGame::m_pWire;
 D3DXCOLOR CGame::fogColor;								// フォグカラー
 float CGame::fFogStartPos;								// フォグの開始点
 float CGame::fFogEndPos;								// フォグの終了点
@@ -77,16 +80,11 @@ HRESULT CGame::Init()
 	LPDIRECT3DDEVICE9 pDevice = CApplication::GetRenderer()->GetDevice();
 
 	// 重力の値を設定
-	CCalculation::SetGravity(10.0f);
+	CCalculation::SetGravity(0.2f);
 
-	// 地面の設定
-	m_pMesh3D = CMesh3D::Create();
-	m_pMesh3D->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
-	m_pMesh3D->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
-	m_pMesh3D->SetSize(D3DXVECTOR3(5000.0f, 0, 5000.0f));
-	m_pMesh3D->SetBlock(CMesh3D::DOUBLE_INT(10, 10));
-	m_pMesh3D->SetSplitTex(true);
-	m_pMesh3D->LoadTex(13);
+	// マップの設定
+	CMapManager *pMap = CMapManager::Create();
+	pMap->SetMap("data/FILE/map000.txt");
 
 	// スカイボックスの設定
 	CSphere *pSphere = CSphere::Create();
@@ -95,7 +93,6 @@ HRESULT CGame::Init()
 	pSphere->SetBlock(CMesh3D::DOUBLE_INT(100, 100));
 	pSphere->SetRadius(50000.0f);
 	pSphere->SetSphereRange(D3DXVECTOR2(D3DX_PI * 2.0f, D3DX_PI * -0.5f));
-	pSphere->LoadTex(12);
 
 	// プレイヤーの設定
 	m_pPlayer = CPlayer::Create();
@@ -117,18 +114,26 @@ HRESULT CGame::Init()
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
 	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 
-	// モデルの設置
-	//CModelObj::LoadFile("data/FILE/BG_model.txt");
+	// カメラの追従設定(目標 : プレイヤー)
+	pCamera = CApplication::GetMapCamera();
+	pCamera->SetFollowTarget(m_pPlayer, 1.0);
+	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 1000.0f, 0.0f));
+	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	pCamera->SetViewSize(0, 0, CRenderer::SCREEN_WIDTH / 4, CRenderer::SCREEN_HEIGHT / 4);
 
 	// 武器のの設置
 	CWeaponObj *pWeapon = CWeaponObj::Create();
 	pWeapon->SetPos(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
-	pWeapon->SetType(22);
+	pWeapon->SetType(11);
 	pWeapon->SetWeaponType(CWeaponObj::WEAPONTYPE_KNIFE);
 	pWeapon->SetAttack(5);
 	CCollision_Rectangle3D *pCollision = pWeapon->GetCollision();
 	pCollision->SetSize(D3DXVECTOR3(10.0f, 36.0f, 10.0f));
 	pCollision->SetPos(D3DXVECTOR3(0.0f, 18.0f, 0.0f));
+
+	// ワイヤー
+	m_pWire = CWire::Create();
+	m_pWire->SetPos(D3DXVECTOR3(0.0f, 10.0f, 200.0f));
 
 	// マウスカーソルを消す
 	pMouse->SetShowCursor(false);
@@ -192,6 +197,11 @@ void CGame::Uninit()
 		m_pMesh3D = nullptr;
 	}
 
+	if (m_pWire != nullptr)
+	{
+		m_pWire->Uninit();
+	}
+
 	// スコアの解放
 	Release();
 }
@@ -208,6 +218,9 @@ void CGame::Update()
 
 	// キーボードの取得
 	CKeyboard *pKeyboard = CApplication::GetKeyboard();
+
+	// カメラの追従設定
+	CCamera *pCamera = CApplication::GetCamera();
 
 	if (pKeyboard->GetTrigger(DIK_F3))
 	{
@@ -228,10 +241,38 @@ void CGame::Update()
 			pCamera->SetTargetPosR(false);
 		}
 	}
+	if (pKeyboard->GetTrigger(DIK_F5))
+	{
+		D3DXVECTOR3 vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+		switch (m_pWire->GetWireMode())
+		{
+		case CWire::MODE_STOP:
+			m_pWire->SetWireMode(CWire::MODE_FIRING);
+			vec = pCamera->GetPosV() - pCamera->GetPosR();
+			break;
+
+		case CWire::MODE_FIRING:
+			m_pWire->SetWireMode(CWire::MODE_ATTRACT);
+			pCamera->SetFollowTarget(m_pWire->GetStart(), 1.0);
+			vec = m_pWire->GetStart()->GetPos() - m_pWire->GetGoal()->GetPos();
+			break;
+
+		case CWire::MODE_ATTRACT:
+			m_pWire->SetWireMode(CWire::MODE_FIRING);
+			vec = pCamera->GetPosV() - pCamera->GetPosR();
+			break;
+
+		default:
+			break;
+		}
+		
+		D3DXVec3Normalize(&vec, &vec);
+		m_pWire->SetMoveVec(-vec);
+	}
 
 	if (pKeyboard->GetPress(DIK_LSHIFT))
 	{
-		CCamera *pCamera = CApplication::GetCamera();
 		pCamera->Zoom();
 	}
 

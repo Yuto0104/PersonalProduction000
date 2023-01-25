@@ -117,9 +117,11 @@ HRESULT CGame::Init()
 	// カメラの追従設定(目標 : プレイヤー)
 	pCamera = CApplication::GetMapCamera();
 	pCamera->SetFollowTarget(m_pPlayer, 1.0);
-	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 1000.0f, 0.0f));
+	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 10000.0f, 0.0f));
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
-	pCamera->SetViewSize(0, 0, CRenderer::SCREEN_WIDTH / 4, CRenderer::SCREEN_HEIGHT / 4);
+	pCamera->SetViewSize(0, 0, 250, 250);
+	pCamera->SetUseRoll(false, true);
+	pCamera->SetAspect(D3DXVECTOR2(10000.0f, 10000.0f));
 
 	// 武器のの設置
 	CWeaponObj *pWeapon = CWeaponObj::Create();

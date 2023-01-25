@@ -28,6 +28,11 @@ class CWire : public CModelObj
 {
 public:
 	//--------------------------------------------------------------------
+	// 定数定義
+	//--------------------------------------------------------------------
+	static const float fDECISION;
+
+	//--------------------------------------------------------------------
 	// ワイヤーモードの列挙型
 	//--------------------------------------------------------------------
 	enum WIRE_MODE
@@ -66,7 +71,7 @@ public:
 	WIRE_MODE GetWireMode() { return m_EMode; }								// ワイヤーモードの取得
 	CObject::EObjectType GetTargetObjType() { return m_ETargetObjType; }	// 当たったオブジェクトタイプの取得
 	void SetHanging();
-	void SetRotVec(D3DXVECTOR3 rotVec) { m_rotVec = rotVec; }
+	void SetRotVec(D3DXVECTOR3 rotVec);
 	D3DXVECTOR3 GetMoveing() { return m_move; }
 	D3DXVECTOR3 HangingSearch();
 
@@ -82,17 +87,23 @@ private:
 	//--------------------------------------------------------------------
 	CModelObj *m_pStart;						// スタート地点
 	CModelObj *m_pGoal;							// ゴール地点
+	CModelObj *m_pDecision;						// 判定用オブジェクト
 	CMove *m_pMove;								// 移動情報
 	CMove *m_pRoll;								// 回転情報
 	CLine *m_pLine;								// ワイヤー
 	WIRE_MODE m_EMode;							// ワイヤーモード
 	WIRE_MODE m_ENextMode;						// 次のワイヤーモード
 	CObject::EObjectType m_ETargetObjType;		// ターゲットのオブジェクトタイプ
+	D3DXMATRIX m_mtxWorld;						// ワールドマトリックス
+	D3DXMATRIX m_mtxRot;						// 回転マトリックス
+	D3DXQUATERNION m_quat;						// クォータニオン
 	D3DXVECTOR3 m_move;							// 移動
 	D3DXVECTOR3 m_moveVec;						// 移動ベクトル
 	D3DXVECTOR3 m_rot;							// 向き
 	D3DXVECTOR3 m_rotDest;						// 目的の向き
 	D3DXVECTOR3 m_rotVec;						// 向きベクトル
+	D3DXVECTOR3 m_vecAxis;						// 回転軸
+	float m_fValueRot;							// 回転角
 	float m_fLength;							// 長さ
 };
 

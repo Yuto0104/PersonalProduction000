@@ -75,6 +75,8 @@ public:
 	void SetTargetPosR(bool bUse);
 	void SetViewing(const float fViewing) { m_fViewing = fViewing; }
 	void SetPosRDiff(const D3DXVECTOR2 posRDiff) { m_posRDiff = posRDiff; }
+	void SetAspect(D3DXVECTOR2 aspect) { m_aspect = aspect; }
+	void SetUseRoll(bool X, bool Y);
 	void SetViewSize(DWORD X, DWORD Y, int fWidth, int fHeight);
 	CObject *GetTargetPosR() { return m_pTargetPosR; }
 
@@ -106,10 +108,13 @@ private:
 	D3DXVECTOR3			m_rot;				// 向き
 	D3DXVECTOR3			m_rotMove;			// 移動方向
 	D3DXVECTOR2			m_posRDiff;			// 注視点ターゲット時の差分
+	D3DXVECTOR2			m_aspect;			// アスペクト比の値
 	VIEW_TYPE			m_viewType;			// 投影の種別
 	float				m_fViewing;			// 視野角
 	float				m_fRotMove;			// 移動方向
 	float				m_fCoeffFllow;		// 追従の減衰係数
+	bool				m_bUseRollX;		// X軸の回転の使用状況
+	bool				m_bUseRollY;		// Y軸の回転の使用状況
 	bool				m_bFllow;			// 追従を行うか
 };
 

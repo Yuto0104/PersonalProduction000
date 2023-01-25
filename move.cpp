@@ -97,11 +97,15 @@ void CMove::Moving(const D3DXVECTOR3 &moveDir)
 //=============================================================================
 void CMove::SetMoveVec(const D3DXVECTOR3 vec)
 {
+	// ³‹K‰»
+	D3DXVECTOR3 myVec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVec3Normalize(&myVec, &vec);
+
 	// ˆÚ“®‹——£‚Ìİ’è
 	float fLength = sqrtf((m_move.x * m_move.x) + (m_move.y * m_move.y) + (m_move.z * m_move.z));
 
 	// ˆÚ“®ƒxƒNƒgƒ‹‚Ìİ’è
-	m_move = vec * fLength;
+	m_move = myVec * fLength;
 }
 
 

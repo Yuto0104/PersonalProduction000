@@ -23,6 +23,11 @@
 #include "camera.h"
 #include "debug_proc.h"
 
+//--------------------------------------------------------------------
+// 定数定義
+//--------------------------------------------------------------------
+const float CWire::fDECISION = 500.0f;
+
 //=============================================================================
 // インスタンス生成
 // Author : 唐﨑結斗
@@ -53,19 +58,24 @@ CWire *CWire::Create()
 //=============================================================================
 CWire::CWire() : m_pStart(nullptr),			// スタート地点
 m_pGoal(nullptr),							// ゴール地点
+m_pDecision(nullptr),						// 判定用オブジェクト
 m_pMove(nullptr),							// 移動情報
 m_pRoll(nullptr),							// 回転情報
 m_pLine(nullptr),							// ワイヤー
 m_EMode(MODE_STOP),							// ワイヤーモード
 m_ENextMode(MODE_STOP),						// 次のワイヤーモード
+m_quat(),									// クォータニオン
 m_move(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),		// 移動
 m_moveVec(D3DXVECTOR3(0.0f,0.0f,0.0f)),		// 移動ベクトル
 m_rot(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),		// 向き
 m_rotDest(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),	// 目的の向き
 m_rotVec(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),	// 向きベクトル
 m_fLength(0.0f)								// 長さ
-{
+{// ワールドマトリックス
+	D3DXMatrixIdentity(&m_mtxWorld);
 
+	// 回転マトリックス
+	D3DXMatrixIdentity(&m_mtxRot);							
 }
 
 //=============================================================================
@@ -106,6 +116,12 @@ HRESULT CWire::Init()
 	m_pCollision = m_pGoal->GetCollision();
 	m_pCollision->SetSize(D3DXVECTOR3(10.0f, 10.0f, 10.0f));
 
+	// 判定用オブジェクト
+	m_pDecision = CModelObj::Create();
+	m_pDecision->SetObjType(CObject::OBJETYPE_WIRE);
+	m_pCollision = m_pDecision->GetCollision();
+	m_pCollision->SetSize(D3DXVECTOR3(600.0f, 10.0f, 600.0f));
+
 	// ライン
 	m_pLine = CLine::Create();
 
@@ -117,7 +133,7 @@ HRESULT CWire::Init()
 	// 回転クラスのメモリ確保
 	m_pRoll = new CMove;
 	assert(m_pRoll != nullptr);
-	m_pRoll->SetMoving(0.05f, 1.0f, 0.0f, 0.01f);
+	m_pRoll->SetMoving(10.0f, 1000.0f, 0.0f, 0.01f);
 
 	return E_NOTIMPL;
 }
@@ -139,6 +155,12 @@ void CWire::Uninit()
 	{// 終了
 		m_pGoal->Uninit();
 		m_pGoal = nullptr;
+	}
+
+	if (m_pDecision != nullptr)
+	{// 終了
+		m_pDecision->Uninit();
+		m_pDecision = nullptr;
 	}
 
 	if (m_pLine != nullptr)
@@ -251,6 +273,44 @@ void CWire::Draw()
 	// ワイヤーの描画
 	CModelObj::Draw();
 
+	if (m_EMode == MODE_HANGING)
+	{
+		// 位置の取得
+		D3DXVECTOR3 pos = m_pGoal->GetPos();
+
+		// デバイスの取得
+		LPDIRECT3DDEVICE9 pDevice = CApplication::GetRenderer()->GetDevice();
+
+		// 計算用マトリックス
+		D3DXMATRIX mtxRot, mtxTrans;
+
+		// ワールドマトリックスの初期化
+		D3DXMatrixIdentity(&m_mtxWorld);									// 行列初期化関数
+
+		// クォータニオンの作成
+		D3DXQuaternionRotationAxis(&m_quat, &m_vecAxis, m_fValueRot);
+
+		// 向きの反映
+		D3DXMatrixRotationQuaternion(&mtxRot, &m_quat);
+		D3DXMatrixMultiply(&m_mtxRot, &m_mtxRot, &mtxRot);
+		D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &m_mtxRot);
+
+		// 位置を反映
+		D3DXMatrixTranslation(&mtxTrans, pos.x, pos.y, pos.z);				// 行列移動関数
+		D3DXMatrixMultiply(&m_mtxWorld, &m_mtxWorld, &mtxTrans);			// 行列掛け算関数
+
+		// ワールドマトリックスの設定
+		pDevice->SetTransform(D3DTS_WORLD, &m_mtxWorld);
+	}
+	else
+	{
+		// ワールドマトリックス
+		D3DXMatrixIdentity(&m_mtxWorld);
+
+		// 回転マトリックス
+		D3DXMatrixIdentity(&m_mtxRot);
+	}
+
 	if (m_pLine != nullptr)
 	{// ラインの設定
 		m_pLine->SetLine(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), m_pStart->GetPos(), m_pGoal->GetPos(), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
@@ -265,6 +325,7 @@ void CWire::Draw()
 void CWire::SetPos(const D3DXVECTOR3 & pos)
 {
 	m_pStart->SetPos(pos);
+	m_pDecision->SetPos(D3DXVECTOR3(pos.x, pos.y + fDECISION, pos.z));
 	m_pGoal->SetPos(pos);
 	CModelObj::SetPos(pos);
 }
@@ -315,6 +376,7 @@ void CWire::Move()
 
 	case CWire::MODE_ATTRACT:
 		m_pStart->SetPos(pos);
+		m_pDecision->SetPos(D3DXVECTOR3(pos.x, pos.y + fDECISION, pos.z));
 		break;
 
 	default:
@@ -341,66 +403,43 @@ void CWire::Hanging()
 	CCamera *pCamera = CApplication::GetCamera();
 
 	// 移動方向の算出
-	m_rotDest.y = pCamera->GetRot().y - D3DX_PI;
+	m_rotDest.y = pCamera->GetRot().y + D3DX_PI;
 
 	// 移動方向の正規化
-	m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y);
-
-	// 目的の向きの補正
-	if (m_rotDest.y - m_rot.y >= D3DX_PI)
-	{// 移動方向の正規化
-		m_rotDest.y -= D3DX_PI * 2;
-	}
-	else if (m_rotDest.y - m_rot.y <= -D3DX_PI)
-	{// 移動方向の正規化
-		m_rotDest.y += D3DX_PI * 2;
-	}
-
-	// 正規化
-	m_rotDest.x = CCalculation::RotNormalization(m_rotDest.x);
-	m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y);
-	m_rotDest.z = CCalculation::RotNormalization(m_rotDest.z);
+	m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y - m_rot.y);
 
 	// 向きの更新
-	m_rot.y += (m_rotDest.y - m_rot.y) * 0.1f;
+	m_rot.y += (m_rotDest.y - m_rot.y) * 0.01f;
 
 	// 向きの正規化
 	m_rot.y = CCalculation::RotNormalization(m_rot.y);
 
 	// 摩擦係数の計算
+	m_pRoll->SetMoveVec(D3DXVECTOR3(sinf(m_rot.y), 0.0f, cosf(m_rot.y)));
 	m_pRoll->Moving(m_rotVec);
-	D3DXVECTOR3 rollDir = m_pRoll->GetMove();
-
-	// 正規化
-	rollDir.x = CCalculation::RotNormalization(rollDir.x);
-	rollDir.y = CCalculation::RotNormalization(rollDir.y);
-	rollDir.z = CCalculation::RotNormalization(rollDir.z);
-
-	// 回転
-	m_rot += rollDir;
-
-	// 正規化
-	m_rot.x = CCalculation::RotNormalization(m_rot.x);
-	m_rot.y = CCalculation::RotNormalization(m_rot.y);
-	m_rot.z = CCalculation::RotNormalization(m_rot.z);
-
-	// 移動方向の設定
-	pos.z = posGoal.z + sinf(m_rot.x) * cosf(m_rot.y) * m_fLength;
-	pos.x = posGoal.x + sinf(m_rot.x) * sinf(m_rot.y) * m_fLength;
-	pos.y = posGoal.y + cosf(m_rot.x) * m_fLength;
+	D3DXVECTOR3 moveing = m_pRoll->GetMove();
 
 	// 移動
-	pos += move;
+	D3DXVECTOR3 vec = GetGoal()->GetPos() - GetStart()->GetPos();
+	D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0.0f, -m_fLength, 0.0f), &m_mtxWorld);
 	m_move = pos - m_pStart->GetPos();
 	m_pStart->SetPos(pos);
+	m_pDecision->SetPos(D3DXVECTOR3(pos.x, pos.y + fDECISION, pos.z));
+
 	m_rotVec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
-	float fLimit = 0.45f;
+	// 回転軸の設定
+	m_vecAxis = D3DXVECTOR3(moveing.z, moveing.y, moveing.x * -1);
+
+	// 回転角の設定
+	m_fValueRot = D3DXVec3Length(&moveing) / m_fLength;
+
+	float fLimit = 0.5f;
 
 	if ((m_rot.x <= D3DX_PI * fLimit  && m_rot.x >= D3DX_PI * 0.0f)
 		|| (m_rot.x >= D3DX_PI * -fLimit  && m_rot.x <= D3DX_PI * 0.0f))
 	{
-		m_EMode = MODE_STOP;
+		//m_EMode = MODE_STOP;
 	}
 
 	CDebugProc::Print("ワイヤーの向き : %.3f\n", m_rot.x);
@@ -425,19 +464,60 @@ void CWire::SetWireMode(WIRE_MODE EWireMode)
 void CWire::SetHanging()
 {
 	// 方向ベクトル
-	D3DXVECTOR3 vec = GetStart()->GetPos() - GetGoal()->GetPos();
+	D3DXVECTOR3 vec = GetGoal()->GetPos() - GetStart()->GetPos();
 
 	// 向きの設定
 	m_rot.z = sqrtf((vec.x * vec.x) + (vec.z * vec.z));
 	m_rot.x = atan2f(m_rot.z, vec.y);
 	m_rot.y = atan2f(vec.x, vec.z);
 	m_rot.z = 0.0f;
+	
+	// 移動方向の設定
+	m_rotVec = D3DXVECTOR3(-vec.x, vec.y, -vec.z);
 
 	// 長さの設定
 	m_fLength = sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
 }
 
+//=============================================================================
+// 方向ベクトルの設定
+// Author : 唐﨑結斗
+// 概要 : 
+//=============================================================================
+void CWire::SetRotVec(D3DXVECTOR3 rotVec)
+{
+	m_rotVec = rotVec;
+	m_pRoll->SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+}
+
+//=============================================================================
+// ぶら下がる場所の設定
+// Author : 唐﨑結斗
+// 概要 : 
+//=============================================================================
 D3DXVECTOR3 CWire::HangingSearch()
 {
-	return D3DXVECTOR3();
+	// 返り値の定義
+	D3DXVECTOR3 vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	// 当たり判定
+	CCollision_Rectangle3D *pCollision = m_pDecision->GetCollision();
+
+	if (pCollision->Collision(CObject::OBJTYPE_3DMODEL, false))
+	{
+		CModelObj *pModel = (CModelObj*)pCollision->GetCollidedObj();
+
+		// 情報の取得
+		D3DXVECTOR3 posTarget = pModel->GetPos();
+		posTarget.y = m_pDecision->GetPos().y;
+		D3DXVECTOR3 pos = m_pStart->GetPos();
+
+		// 方向ベクトルの算出
+		vec = posTarget - pos;
+	}
+
+	// 正規化
+	D3DXVec3Normalize(&vec, &vec);
+
+	return vec;
 }

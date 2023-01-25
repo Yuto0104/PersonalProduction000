@@ -577,8 +577,8 @@ void CModel3D::Shadow()
 			D3DMATERIAL9  matD3D = pMat[nCntMat].MatD3D;
 
 			// 引数を色に設定
-			matD3D.Diffuse = D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f);
-			matD3D.Emissive = D3DXCOLOR(0.0f, 0.0f, 0.0f, 1.0f);
+			matD3D.Diffuse = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.5f);
+			matD3D.Emissive = D3DXCOLOR(0.0f, 0.0f, 0.0f, 0.5f);
 
 			// マテリアルの設定
 			pDevice->SetMaterial(&matD3D);

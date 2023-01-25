@@ -52,10 +52,13 @@ CCamera::CCamera()
 	m_rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);			// 向き
 	m_rotMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動方向
 	m_posRDiff = D3DXVECTOR2(0.0f, 0.0f);			// 注視点ターゲット時の差分
+	m_aspect = D3DXVECTOR2(0.0f, 0.0f);				// アスペクト比の値
 	m_viewType = TYPE_CLAIRVOYANCE;					// 投影の種別
 	m_fViewing = 0.0f;								// 視野角
 	m_fRotMove = 0.0f;								// 移動方向
 	m_fCoeffFllow = 0.0f;							// 追従の減衰係数
+	m_bUseRollX = true;								// X軸の回転の使用状況
+	m_bUseRollY = true;								// Y軸の回転の使用状況
 	m_bFllow = false;								// 追従を行うか
 }
 
@@ -101,6 +104,9 @@ HRESULT CCamera::Init()
 	m_pRoll = new CMove;
 	assert(m_pRoll != nullptr);
 	m_pRoll->SetMoving(0.01f, 5.0f, 0.0f, 0.1f);
+
+	// アスペクト比の設定
+	m_aspect = D3DXVECTOR2((float)CRenderer::SCREEN_WIDTH, (float)CRenderer::SCREEN_HEIGHT);
 
 	// ビューポートの大きさ設定
 	SetViewSize(0, 0, CRenderer::SCREEN_WIDTH, CRenderer::SCREEN_HEIGHT);
@@ -203,11 +209,11 @@ void CCamera::Set()
 
 	case TYPE_PARALLEL:
 		// プロジェクションマトリックスの作成(平行投影)
-		D3DXMatrixOrthoLH(&m_mtxProj,							// プロジェクションマトリックス
-			(float)CRenderer::SCREEN_WIDTH,						// 幅
-			(float)CRenderer::SCREEN_HEIGHT,					// 高さ
-			CAMERA_NEAR,										// ニア
-			CAMERA_FUR);										// ファー
+		D3DXMatrixOrthoLH(&m_mtxProj,		// プロジェクションマトリックス
+			m_aspect.x,						// 幅
+			m_aspect.y,						// 高さ
+			CAMERA_NEAR,					// ニア
+			CAMERA_FUR);					// ファー
 		break;
 
 	default:
@@ -312,6 +318,17 @@ void CCamera::SetTargetPosR(bool bUse)
 }
 
 //=============================================================================
+// 回転の使用状況の設定
+// Author : 唐﨑結斗
+// 概要 : 回転の使用状況の設定
+//=============================================================================
+void CCamera::SetUseRoll(bool X, bool Y)
+{
+	m_bUseRollX = X;	// X軸の回転の使用状況
+	m_bUseRollY = Y;	// Y軸の回転の使用状況
+}
+
+//=============================================================================
 // ビューポートサイズの設定
 // Author : 唐﨑結斗
 // 概要 : 画面左上を0.0に画面サイズを設定
@@ -410,6 +427,15 @@ void CCamera::Rotate(void)
 
 			// 移動方向の算出
 			rollDir = mouseMove * (D3DX_PI / 180.0f);
+
+			if (!m_bUseRollX)
+			{
+				rollDir.x = 0.0f;
+			}
+			if (!m_bUseRollY)
+			{
+				rollDir.y = 0.0f;
+			}
 		}
 	}
 

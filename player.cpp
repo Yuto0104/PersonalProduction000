@@ -240,29 +240,30 @@ void CPlayer::Update()
 	{
 		m_pWire->SetWireMode(CWire::MODE_HANGING);
 		m_pWire->SetHanging();
-		m_pWire->SetRotVec(D3DXVECTOR3(1.0f, 0.0f, 0.0f));
+		m_pWire->SetRotVec(D3DXVECTOR3(-1.0f, 0.0f, 0.0f));
 	}
 
-	if (pKeyboard->GetTrigger(DIK_F)
-		&& m_pWire->GetWireMode() == CWire::MODE_STOP)
+	if (pKeyboard->GetTrigger(DIK_LSHIFT)
+		&& m_pWire->GetWireMode() == CWire::MODE_STOP
+		&& m_fGravity != 0.0f)
 	{// ワイヤーの射出
-		m_pWire->SetWireMode(CWire::MODE_FIRING);
-		D3DXVECTOR3 vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		D3DXVECTOR3 rot = GetRot();
-		rot.x = CCalculation::RotNormalization(rot.x + D3DX_PI * -0.5f);
-		vec.z = sinf(rot.x) * cosf(rot.y);
-		vec.x = sinf(rot.x) * sinf(rot.y);
-		vec.y = cosf(rot.x);
-		D3DXVec3Normalize(&vec, &vec);
-		m_pWire->SetMoveVec(vec);
+		D3DXVECTOR3 vec = m_pWire->HangingSearch();
+
+		if (vec != D3DXVECTOR3(0.0f, 0.0f, 0.0f))
+		{
+			m_pWire->SetWireMode(CWire::MODE_FIRING);
+			m_pWire->SetMoveVec(vec);
+		}
 	}
 	else if (pKeyboard->GetTrigger(DIK_F)
 		&& m_pWire->GetWireMode() == CWire::MODE_FIRING)
 	{
-		m_pWire->SetWireMode(CWire::MODE_ATTRACT);
+		/*m_pWire->SetWireMode(CWire::MODE_ATTRACT);
 		D3DXVECTOR3 vec = m_pWire->GetStart()->GetPos() - m_pWire->GetGoal()->GetPos();
 		m_pWire->SetMoveVec(-vec);
-		m_pMove->SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+		m_pMove->SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));*/
+
+		m_pWire->SetWireMode(CWire::MODE_STOP);
 	}
 
 	// 重力の設定
@@ -345,29 +346,29 @@ void CPlayer::Update()
 	m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_NONE, true);
 	m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_ENEMY, true);
 
-	if (m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL, true))
-	{
-		CCollision_Rectangle3D::EState state = m_pCollisionRectangle3D->GetState();
+	//if (m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL, true))
+	//{
+	//	CCollision_Rectangle3D::EState state = m_pCollisionRectangle3D->GetState();
 
-		if (state == CCollision_Rectangle3D::STATE_Y)
-		{
-			m_fGravity = 0.0f;
+	//	if (state == CCollision_Rectangle3D::STATE_Y)
+	//	{
+	//		m_fGravity = 0.0f;
 
-			D3DXVECTOR3 move = m_pMove->GetMove();
-			move.y = 0.0f;
-			m_pMove->SetMove(move);
-		}
+	//		D3DXVECTOR3 move = m_pMove->GetMove();
+	//		move.y = 0.0f;
+	//		m_pMove->SetMove(move);
+	//	}
 
-		if ((state == CCollision_Rectangle3D::STATE_X
-			|| state == CCollision_Rectangle3D::STATE_Y
-			|| state == CCollision_Rectangle3D::STATE_Z)
-			&& m_pWire->GetWireMode() == CWire::MODE_HANGING)
-		{
-			m_pWire->SetWireMode(CWire::MODE_STOP);
-		}
-	}
+	//	if ((state == CCollision_Rectangle3D::STATE_X
+	//		|| state == CCollision_Rectangle3D::STATE_Y
+	//		|| state == CCollision_Rectangle3D::STATE_Z)
+	//		&& m_pWire->GetWireMode() == CWire::MODE_HANGING)
+	//	{
+	//		//m_pWire->SetWireMode(CWire::MODE_STOP);
+	//	}
+	//}
 
-	m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL);
+	//m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL);
 
 	// 武器との当たり判定
 	bool bCollisionWeapon = m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_WEAPON, false);
@@ -557,19 +558,6 @@ D3DXVECTOR3 CPlayer::Move()
 		// 移動方向の正規化
 		m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y);
 
-		// 向きの取得
-		D3DXVECTOR3 rot = GetRot();
-
-		// 目的の向きの補正
-		if (m_rotDest.y - rot.y >= D3DX_PI)
-		{// 移動方向の正規化
-			m_rotDest.y -= D3DX_PI * 2;
-		}
-		else if (m_rotDest.y - rot.y <= -D3DX_PI)
-		{// 移動方向の正規化
-			m_rotDest.y += D3DX_PI * 2;
-		}
-
 		if (m_EAction == NEUTRAL_ACTION
 			|| m_EAction == KNIFE_NEUTRAL_ACTION)
 		{// 移動
@@ -632,6 +620,19 @@ D3DXVECTOR3 CPlayer::Move()
 
 	// デバック表示
 	CDebugProc::Print("移動ベクトル : %.3f\n", m_pMove->GetMoveLength());
+
+	// 向きの取得
+	D3DXVECTOR3 rot = GetRot();
+
+	// 目的の向きの補正
+	if (m_rotDest.y - rot.y >= D3DX_PI)
+	{// 移動方向の正規化
+		m_rotDest.y -= D3DX_PI * 2;
+	}
+	else if (m_rotDest.y - rot.y <= -D3DX_PI)
+	{// 移動方向の正規化
+		m_rotDest.y += D3DX_PI * 2;
+	}
 
 	return moveing;
 }

@@ -105,6 +105,8 @@ private:
 	D3DXVECTOR3 m_vecAxis;						// ‰ñ“]Ž²
 	float m_fValueRot;							// ‰ñ“]Šp
 	float m_fLength;							// ’·‚³
+	float m_fAddRot;							// ‰ÁŽZ
+	float m_fAccele;							// Šp‰Á‘¬“x
 };
 
 #endif

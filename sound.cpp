@@ -57,13 +57,17 @@ HRESULT CSound::Init(HWND hWnd)
 	HRESULT hr;
 
 	// 各音素材のパラメータ
-	m_aParam[SOUND_LABEL_BGM000] = SetSoundParam("data/BGM/title001.wav", -1);
-	m_aParam[SOUND_LABEL_BGM001] = SetSoundParam("data/BGM/bgm001.wav", -1);
-	m_aParam[SOUND_LABEL_BGM002] = SetSoundParam("data/BGM/result.wav", -1);
+	m_aParam[SOUND_LABEL_BGM000] = SetSoundParam("data/BGM/title002.wav", -1);
+	m_aParam[SOUND_LABEL_BGM001] = SetSoundParam("data/BGM/game002.wav", -1);
+	m_aParam[SOUND_LABEL_BGM002] = SetSoundParam("data/BGM/result002.wav", -1);
 	m_aParam[SOUND_LABEL_BGM003] = SetSoundParam("data/BGM/tutorial000.wav", -1);
 	m_aParam[SOUND_LABEL_SE_DECIDE] = SetSoundParam("data/SE/decide000.wav", 0);
 	m_aParam[SOUND_LABEL_SE_SELECT] = SetSoundParam("data/SE/select000.wav", 0);
 	m_aParam[SOUND_LABEL_SE_PAUSE] = SetSoundParam("data/SE/pause000.wav", 0);
+	m_aParam[SOUND_LABEL_SE_JUMP000] = SetSoundParam("data/SE/jump002.wav", 0);
+	m_aParam[SOUND_LABEL_SE_JUMP001] = SetSoundParam("data/SE/jump001.wav", 0);
+	m_aParam[SOUND_LABEL_SE_SHOT000] = SetSoundParam("data/SE/shot001.wav", 0);
+	m_aParam[SOUND_LABEL_SE_COIN000] = SetSoundParam("data/SE/coin000.wav", 0);
 
 	// COMライブラリの初期化
 	CoInitializeEx(NULL, COINIT_MULTITHREADED);

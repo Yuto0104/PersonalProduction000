@@ -47,12 +47,13 @@ CTexture *CApplication::m_pTexture = nullptr;						// テクスチャインスタンス
 CCamera *CApplication::m_pCamera = nullptr;							// カメラインスタンス
 CCamera *CApplication::m_pMapCamera = nullptr;						// マップカメラ
 CApplication::SCENE_MODE CApplication::m_mode = MODE_NONE;			// 現在のモードの格納
-CApplication::SCENE_MODE CApplication::m_nextMode = MODE_GAME;		// 次のモードの格納
+CApplication::SCENE_MODE CApplication::m_nextMode = MODE_TITLE;		// 次のモードの格納
 CSceneMode *CApplication::pSceneMode = nullptr;						// シーンモードを格納
 CFade *CApplication::m_pFade = nullptr;								// フェードクラス
 CLight *CApplication::m_pLight = nullptr;							// ライトクラス
 CSound *CApplication::m_pSound = nullptr;							// サウンドクラス
 int CApplication::m_nPriority = 0;									// プライオリティ番号
+int CApplication::m_nScore = 0;										// 現在のスコア
 bool CApplication::m_bWireFrame = false;							// ワイヤーフレームを使うか
 
 //=============================================================================
@@ -275,22 +276,22 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	// 初期化処理
 	assert(m_pRenderer != nullptr);
 
+	//if (FAILED(m_pRenderer->Init(m_hWnd, TRUE)) != 0)
+	//{//初期化処理が失敗した場合
+	//	return-1;
+	//}
+
+#ifdef _DEBUG
 	if (FAILED(m_pRenderer->Init(m_hWnd, TRUE)) != 0)
 	{//初期化処理が失敗した場合
 		return-1;
 	}
-
-//#ifdef _DEBUG
-//	if (FAILED(m_pRenderer->Init(m_hWnd, TRUE)) != 0)
-//	{//初期化処理が失敗した場合
-//		return-1;
-//	}
-//#else
-//	if (FAILED(m_pRenderer->Init(m_hWnd, FALSE)) != 0)
-//	{//初期化処理が失敗した場合
-//		return-1;
-//	}
-//#endif
+#else
+	if (FAILED(m_pRenderer->Init(m_hWnd, FALSE)) != 0)
+	{//初期化処理が失敗した場合
+		return-1;
+	}
+#endif
 
 	// 初期化処理
 	assert(m_pTexture != nullptr);

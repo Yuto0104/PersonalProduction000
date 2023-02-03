@@ -67,6 +67,7 @@ public:
 	static CCamera *GetCamera() { return m_pCamera; }									// カメラのゲッター
 	static CCamera *GetMapCamera() { return m_pMapCamera; }								// マップカメラのゲッター
 	static CLight *GetLight() { return m_pLight; }										// ライトの取得
+	static CSound *GetSound() { return m_pSound; }										// サウンドのゲッター
 	static D3DXVECTOR3 ScreenCastWorld(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static D3DXVECTOR3 WorldCastScreen(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static float RotNormalization(float fRot);											// 角度の設定
@@ -74,6 +75,8 @@ public:
 	static void SetNextMode(SCENE_MODE mode) { m_nextMode = mode; }						// 次のモードの設定
 	static void SetMode(SCENE_MODE mode);												// モードの設定
 	static SCENE_MODE GetMode() { return m_mode; }										// モードの取得
+	static void SetScore(const int nScore) { m_nScore = nScore; }						// スコアの設定
+	static int GetScore() { return m_nScore; }											// スコアの取得
 
 	//--------------------------------------------------------------------
 	// コンストラクタとデストラクタ
@@ -108,6 +111,7 @@ private:
 	static CLight *m_pLight;					// ライトクラス
 	static CSound *m_pSound;					// サウンドクラス
 	static int m_nPriority;						// プライオリティ番号
+	static int m_nScore;						// 現在のスコア
 	static bool m_bWireFrame;					// ワイヤーフレームを使うか
 };
 

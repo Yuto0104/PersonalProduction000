@@ -459,7 +459,6 @@ void CModel3D::DrawMaterial()
 				pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
 			}
 			
-
 			// テクスチャの設定
 			pDevice->SetTexture(0, pTexture->GetTexture(m_material[m_nModelID].pNumTex[nCntMat]));
 

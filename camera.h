@@ -79,6 +79,7 @@ public:
 	void SetUseRoll(bool X, bool Y);
 	void SetViewSize(DWORD X, DWORD Y, int fWidth, int fHeight);
 	CObject *GetTargetPosR() { return m_pTargetPosR; }
+	void Shake(const int nTime, const float fShake);
 
 private:
 	//--------------------------------------------------------------------
@@ -113,6 +114,8 @@ private:
 	float				m_fViewing;			// ‹–ìŠp
 	float				m_fRotMove;			// ˆÚ“®•ûŒü
 	float				m_fCoeffFllow;		// ’Ç]‚ÌŒ¸ŠŒW”
+	float				m_fShake;			// —h‚ê‚Ì—Ê
+	int					m_nCntShake;		// —h‚ê‚ÌƒJƒEƒ“ƒg
 	bool				m_bUseRollX;		// X²‚Ì‰ñ“]‚Ìg—pó‹µ
 	bool				m_bUseRollY;		// Y²‚Ì‰ñ“]‚Ìg—pó‹µ
 	bool				m_bFllow;			// ’Ç]‚ğs‚¤‚©

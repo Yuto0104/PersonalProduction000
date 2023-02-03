@@ -53,6 +53,7 @@ CCollision_Rectangle3D::CCollision_Rectangle3D()
 #endif // _DEBUG
 
 	EState m_state = STATE_NONE;			// “–‚½‚Á‚½êŠ
+	m_bPlusMinus = true;					// ³•‰‚Ì”»’è
 }
 
 //=============================================================================
@@ -263,6 +264,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 {
 	// •Ô‚è’l—p‚Ì•Ï”
 	bool bColision = false;
+	m_bPlusMinus = true;
 
 	// Ž©•ª‚Ìî•ñ‚ðŽæ“¾‚·‚é
 	D3DXVECTOR3 pos = GetParent()->GetPos() + GetPos();
@@ -296,6 +298,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 
 			if (bExtrude)
 			{
+				m_bPlusMinus = false;
 				pos.y = posTarget.y - sizeTarget.y - size.y;
 			}
 		}
@@ -322,6 +325,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 				m_state = STATE_Z;
 				if (bExtrude)
 				{
+					m_bPlusMinus = false;
 					pos.x = posTarget.x - sizeTarget.x - size.x;
 				}
 			}
@@ -344,6 +348,7 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 				m_state = STATE_X;
 				if (bExtrude)
 				{
+					m_bPlusMinus = false;
 					pos.z = posTarget.z - sizeTarget.z - size.z;
 				}
 			}

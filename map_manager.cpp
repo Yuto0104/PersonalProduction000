@@ -26,6 +26,7 @@
 #include "calculation.h"
 #include "texture.h"
 #include "super.h"
+#include "score_item.h"
 
 //=============================================================================
 // インスタンス生成
@@ -125,6 +126,9 @@ void CMapManager::SetMap(char * pFileName)
 
 	// モデルの読み込み
 	CModelObj::LoadFile(pFileName);
+
+	// アイテムの読み込み
+	LoadScoreItem(pFileName);
 }
 
 //=============================================================================
@@ -400,6 +404,120 @@ void CMapManager::LoadSkayBox(char * pFileName)
 				pSphere->SetScrollTex(move, bScrollTex);
 				pSphere->SetRadius(fRadius);
 				pSphere->SetSphereRange(sphereRange);
+			}
+		}
+	}
+	else
+	{
+		assert(false);
+	}
+}
+
+//=============================================================================
+// スコアアイテムの読み込み
+// Author : 唐﨑結斗
+// 概要 : スコアアイテムの読み込み
+//=============================================================================
+void CMapManager::LoadScoreItem(char * pFileName)
+{
+	// 変数宣言
+	char aStr[128];
+	int nCntSetModel = 0;
+
+	// ファイルの読み込み
+	FILE *pFile = fopen(pFileName, "r");
+
+	if (pFile != nullptr)
+	{
+		while (fscanf(pFile, "%s", &aStr[0]) != EOF)
+		{// "EOF"を読み込むまで 
+			if (strncmp(&aStr[0], "#", 1) == 0)
+			{// 一列読み込む
+				fgets(&aStr[0], sizeof(aStr), pFile);
+			}
+
+			if (strstr(&aStr[0], "SCOREITEMSET") != NULL)
+			{
+				// モデルの設置
+				CScoreItem *pScoreItem = CScoreItem::Create();
+				assert(pScoreItem != nullptr);
+				CCollision_Rectangle3D *pCollision = pScoreItem->GetCollision();
+				CModel3D *pModel = pScoreItem->GetModel();
+
+				while (strstr(&aStr[0], "END_SCOREITEMSET") == NULL)
+				{
+					fscanf(pFile, "%s", &aStr[0]);
+
+					if (strncmp(&aStr[0], "#", 1) == 0)
+					{// 一列読み込む
+						fgets(&aStr[0], sizeof(aStr), pFile);
+					}
+					else if (strcmp(&aStr[0], "POS") == 0)
+					{// モデルのファイル名の設定
+						D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%f", &pos.x);
+						fscanf(pFile, "%f", &pos.y);
+						fscanf(pFile, "%f", &pos.z);
+						pScoreItem->SetPos(pos);
+					}
+
+					if (strstr(&aStr[0], "ROT") != NULL)
+					{// モデルのファイル名の設定
+						D3DXVECTOR3 rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%f", &rot.x);
+						fscanf(pFile, "%f", &rot.y);
+						fscanf(pFile, "%f", &rot.z);
+						pScoreItem->SetRot(rot);
+					}
+
+					if (strcmp(&aStr[0], "TYPE") == 0)
+					{// キー数の読み込み
+						int nID = 0;
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%d", &nID);
+						pScoreItem->SetType(nID);
+					}
+
+					if (strcmp(&aStr[0], "SHADOW") == 0)
+					{// キー数の読み込み
+						int nUse = 0;
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%d", &nUse);
+						pModel->SetShadow(nUse);
+					}
+
+					if (strcmp(&aStr[0], "SCORE") == 0)
+					{// キー数の読み込み
+						int nScore = 0;
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%d", &nScore);
+						pScoreItem->SetScore(nScore);
+					}
+
+					if (strcmp(&aStr[0], "COLLISION_POS") == 0)
+					{// キー数の読み込み
+						D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%f", &pos.x);
+						fscanf(pFile, "%f", &pos.y);
+						fscanf(pFile, "%f", &pos.z);
+						pCollision->SetPos(pos);
+					}
+
+					if (strcmp(&aStr[0], "COLLISION_SIZE") == 0)
+					{// キー数の読み込み
+						D3DXVECTOR3 size = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+						fscanf(pFile, "%s", &aStr[0]);
+						fscanf(pFile, "%f", &size.x);
+						fscanf(pFile, "%f", &size.y);
+						fscanf(pFile, "%f", &size.z);
+						pCollision->SetSize(size);
+					}
+				}
+
+				nCntSetModel++;
 			}
 		}
 	}

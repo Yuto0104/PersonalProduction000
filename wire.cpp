@@ -22,6 +22,8 @@
 #include "calculation.h"
 #include "camera.h"
 #include "debug_proc.h"
+#include "game.h"
+#include "player.h"
 
 //--------------------------------------------------------------------
 // 定数定義
@@ -70,7 +72,9 @@ m_moveVec(D3DXVECTOR3(0.0f,0.0f,0.0f)),		// 移動ベクトル
 m_rot(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),		// 向き
 m_rotDest(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),	// 目的の向き
 m_rotVec(D3DXVECTOR3(0.0f, 0.0f, 0.0f)),	// 向きベクトル
-m_fLength(0.0f)								// 長さ
+m_fLength(0.0f),							// 長さ
+m_fAddRot(0.0f),							// 加算
+m_fAccele(0.0f)								// 角加速度
 {// ワールドマトリックス
 	D3DXMatrixIdentity(&m_mtxWorld);
 
@@ -128,7 +132,7 @@ HRESULT CWire::Init()
 	// 移動クラスのメモリ確保
 	m_pMove = new CMove;
 	assert(m_pMove != nullptr);
-	m_pMove->SetMoving(40.0f, 1000.0f, 0.0f, 0.01f);
+	m_pMove->SetMoving(60.0f, 1000.0f, 0.0f, 0.01f);
 
 	// 回転クラスのメモリ確保
 	m_pRoll = new CMove;
@@ -258,6 +262,8 @@ void CWire::Update()
 		assert(false);
 		break;
 	}
+
+	CDebugProc::Print("ワイヤーの向き : %.3f\n", m_rot.x / D3DX_PI);
 
 	// ワイヤーの更新
 	CModelObj::Update();
@@ -399,50 +405,30 @@ void CWire::Hanging()
 	D3DXVECTOR3 posGoal = m_pGoal->GetPos();
 	D3DXVECTOR3 move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
-	// カメラ情報の取得
-	CCamera *pCamera = CApplication::GetCamera();
+	//角加速度
+	m_fAccele = (-1 * 0.8f / m_fLength) * sinf(m_rot.x);
 
-	// 移動方向の算出
-	m_rotDest.y = pCamera->GetRot().y + D3DX_PI;
+	// 角度の加算
+	m_fAddRot += m_fAccele;
+	m_fAddRot *= 0.9995f;
+	m_rot.x += m_fAddRot;
+	//m_rot.y += m_fAddRot;
+	m_rot.x = CCalculation::RotNormalization(m_rot.x);
+	m_rot.y = CGame::GetPlayer()->GetRot().y;
 
-	// 移動方向の正規化
-	m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y - m_rot.y);
+	// 位置の設定
+	pos.z = posGoal.z - sinf(m_rot.x) * cosf(m_rot.y) * m_fLength;
+	pos.x = posGoal.x - sinf(m_rot.x) * sinf(m_rot.y) * m_fLength;
+	pos.y = posGoal.y - cosf(m_rot.x) * m_fLength;
 
-	// 向きの更新
-	m_rot.y += (m_rotDest.y - m_rot.y) * 0.01f;
-
-	// 向きの正規化
-	m_rot.y = CCalculation::RotNormalization(m_rot.y);
-
-	// 摩擦係数の計算
-	m_pRoll->SetMoveVec(D3DXVECTOR3(sinf(m_rot.y), 0.0f, cosf(m_rot.y)));
-	m_pRoll->Moving(m_rotVec);
-	D3DXVECTOR3 moveing = m_pRoll->GetMove();
-
-	// 移動
-	D3DXVECTOR3 vec = GetGoal()->GetPos() - GetStart()->GetPos();
-	D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0.0f, -m_fLength, 0.0f), &m_mtxWorld);
-	m_move = pos - m_pStart->GetPos();
 	m_pStart->SetPos(pos);
-	m_pDecision->SetPos(D3DXVECTOR3(pos.x, pos.y + fDECISION, pos.z));
-
-	m_rotVec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-
-	// 回転軸の設定
-	m_vecAxis = D3DXVECTOR3(moveing.z, moveing.y, moveing.x * -1);
-
-	// 回転角の設定
-	m_fValueRot = D3DXVec3Length(&moveing) / m_fLength;
 
 	float fLimit = 0.5f;
 
-	if ((m_rot.x <= D3DX_PI * fLimit  && m_rot.x >= D3DX_PI * 0.0f)
-		|| (m_rot.x >= D3DX_PI * -fLimit  && m_rot.x <= D3DX_PI * 0.0f))
+	if ((m_rot.x >= D3DX_PI * fLimit  && m_rot.x >= D3DX_PI * 0.0f))
 	{
-		//m_EMode = MODE_STOP;
+		m_EMode = MODE_STOP;
 	}
-
-	CDebugProc::Print("ワイヤーの向き : %.3f\n", m_rot.x);
 }
 
 //=============================================================================
@@ -463,20 +449,35 @@ void CWire::SetWireMode(WIRE_MODE EWireMode)
 //=============================================================================
 void CWire::SetHanging()
 {
+	// カメラ情報の取得
+	CCamera *pCamera = CApplication::GetCamera();
+
+	//// 移動方向の算出
+	//m_rotDest.y = pCamera->GetRot().y + D3DX_PI;
+
+	//// 移動方向の正規化
+	//m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y - m_rot.y);
+
+	//// 向きの更新
+	//m_rot.y += (m_rotDest.y - m_rot.y) * 0.01f;
+
+	//// 向きの正規化
+	//m_rot.y = CCalculation::RotNormalization(m_rot.y);
+
+	//// 移動方向の設定
+	//m_rotVec = D3DXVECTOR3(sinf(m_rot.y), 0.0f, cosf(m_rot.y));
+
 	// 方向ベクトル
 	D3DXVECTOR3 vec = GetGoal()->GetPos() - GetStart()->GetPos();
 
-	// 向きの設定
-	m_rot.z = sqrtf((vec.x * vec.x) + (vec.z * vec.z));
-	m_rot.x = atan2f(m_rot.z, vec.y);
-	m_rot.y = atan2f(vec.x, vec.z);
-	m_rot.z = 0.0f;
-	
-	// 移動方向の設定
-	m_rotVec = D3DXVECTOR3(-vec.x, vec.y, -vec.z);
+	m_rot.x = -atan2f(sqrtf((vec.x * vec.x) + (vec.z * vec.z)), vec.y);
+	m_rot.y = CGame::GetPlayer()->GetRot().y;
+	m_rot.x = CCalculation::RotNormalization(m_rot.x);
+	m_rot.y = CCalculation::RotNormalization(m_rot.y);
 
 	// 長さの設定
 	m_fLength = sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+	m_fAddRot = 0.0f;
 }
 
 //=============================================================================

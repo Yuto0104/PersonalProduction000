@@ -92,7 +92,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINSOCK_VERSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -122,7 +122,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;WINSOCK_VERSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -183,14 +183,19 @@
     <ClInclude Include="orbit.h" />
     <ClInclude Include="parts.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="ranking.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="result.h" />
     <ClInclude Include="scene_mode.h" />
+    <ClInclude Include="score.h" />
+    <ClInclude Include="score_item.h" />
     <ClInclude Include="sound.h" />
     <ClInclude Include="sphere.h" />
     <ClInclude Include="super.h" />
+    <ClInclude Include="tcp_client.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="tex_anim.h" />
+    <ClInclude Include="time.h" />
     <ClInclude Include="title.h" />
     <ClInclude Include="wave_mesh.h" />
     <ClInclude Include="weapon_obj.h" />
@@ -229,14 +234,19 @@
     <ClCompile Include="orbit.cpp" />
     <ClCompile Include="parts.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="ranking.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="result.cpp" />
     <ClCompile Include="scene_mode.cpp" />
+    <ClCompile Include="score.cpp" />
+    <ClCompile Include="score_item.cpp" />
     <ClCompile Include="sound.cpp" />
     <ClCompile Include="sphere.cpp" />
     <ClCompile Include="super.cpp" />
+    <ClCompile Include="tcp_client.cpp" />
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="tex_anim.cpp" />
+    <ClCompile Include="time.cpp" />
     <ClCompile Include="title.cpp" />
     <ClCompile Include="wave_mesh.cpp" />
     <ClCompile Include="weapon_obj.cpp" />

@@ -59,6 +59,7 @@ public:
 	bool Collision(CObject::EObjectType objeType);								// 当たり判定	
 	bool ToRectangle(CCollision *pTarget, bool bExtrude);						// 矩形との当たり判定
 	EState GetState() { return m_state; }										// 当たった場所の取得
+	bool GetPlusMinus() { return m_bPlusMinus; }								// 正負判定の取得
 
 #ifdef _DEBUG
 	void SetLine();					// ラインの設定
@@ -73,6 +74,7 @@ private:
 	D3DXCOLOR lineCol;		// ラインの色
 #endif // _DEBUG
 	EState m_state;			// 当たった場所
+	bool m_bPlusMinus;		// 正負の判定
 };
 
 #endif

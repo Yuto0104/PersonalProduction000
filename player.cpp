@@ -31,6 +31,9 @@
 #include "weapon_obj.h"
 #include "motion_enemy.h"
 #include "wire.h"
+#include "score.h"
+#include "score_item.h"
+#include "sound.h"
 
 //--------------------------------------------------------------------
 // 静的メンバ変数の定義
@@ -109,7 +112,7 @@ HRESULT CPlayer::Init()
 	// 移動クラスのメモリ確保
 	m_pMove = new CMove;
 	assert(m_pMove != nullptr);
-	m_pMove->SetMoving(fSPEED, 100.0f, 0.5f, 0.1f);
+	m_pMove->SetMoving(fSPEED, 1000.0f, 0.5f, 0.1f);
 
 	// 軌跡の設定
 	m_pOrbit = COrbit::Create();
@@ -210,6 +213,12 @@ void CPlayer::Update()
 	// モーション情報の取得
 	CMotion *pMotion = CMotionModel3D::GetMotion();
 
+	// カメラ情報の取得
+	CCamera *pCamera = CApplication::GetCamera();
+
+	// サウンド情報の取得
+	CSound *pSound = CApplication::GetSound();
+
 	// 位置の取得
 	D3DXVECTOR3 pos = GetPos();
 	D3DXVECTOR3 rot = GetRot();
@@ -233,6 +242,7 @@ void CPlayer::Update()
 
 	if (pKeyboard->GetTrigger(DIK_SPACE))
 	{// ジャンプ
+		pSound->PlaySound(CSound::SOUND_LABEL_SE_JUMP000);
 		Jump();
 	}
 
@@ -247,13 +257,18 @@ void CPlayer::Update()
 		&& m_pWire->GetWireMode() == CWire::MODE_STOP
 		&& m_fGravity != 0.0f)
 	{// ワイヤーの射出
-		D3DXVECTOR3 vec = m_pWire->HangingSearch();
+		/*D3DXVECTOR3 vec = m_pWire->HangingSearch();
 
 		if (vec != D3DXVECTOR3(0.0f, 0.0f, 0.0f))
 		{
 			m_pWire->SetWireMode(CWire::MODE_FIRING);
 			m_pWire->SetMoveVec(vec);
-		}
+		}*/
+
+		pSound->PlaySound(CSound::SOUND_LABEL_SE_SHOT000);
+		D3DXVECTOR3 vec = pCamera->GetPosR() - pCamera->GetPosV();
+		m_pWire->SetWireMode(CWire::MODE_FIRING);
+		m_pWire->SetMoveVec(vec);
 	}
 	else if (pKeyboard->GetTrigger(DIK_F)
 		&& m_pWire->GetWireMode() == CWire::MODE_FIRING)
@@ -263,7 +278,8 @@ void CPlayer::Update()
 		m_pWire->SetMoveVec(-vec);
 		m_pMove->SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));*/
 
-		m_pWire->SetWireMode(CWire::MODE_STOP);
+		m_pWire->SetWireMode(CWire::MODE_HANGING);
+		m_pWire->SetHanging();
 	}
 
 	// 重力の設定
@@ -277,9 +293,6 @@ void CPlayer::Update()
 	}
 	else if (m_pWire->GetWireMode() == CWire::MODE_HANGING)
 	{
-		// カメラ情報の取得
-		CCamera *pCamera = CApplication::GetCamera();
-
 		// 移動方向の算出
 		m_rotDest.y = pCamera->GetRot().y - D3DX_PI;
 
@@ -302,7 +315,21 @@ void CPlayer::Update()
 		move.y = 0.0f;
 		m_pMove->SetMove(move);
 
-		pos += m_pWire->GetMoveing();
+		if (pMotion != nullptr)
+		{
+			D3DXVECTOR3 startPos = m_pWire->GetStart()->GetPos();
+			D3DXVECTOR3 posHand = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+			// 手のオブジェクトの位置
+			CParts *pHand = pMotion->GetParts(m_nNumHandParts);
+			D3DXVec3TransformCoord(&posHand, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), &pHand->GetMtxWorld());
+
+			// 手との距離の差分を算出
+			D3DXVECTOR3 subPos = pos - posHand;
+
+			// 位置の設定
+			pos = subPos + startPos;
+		}
 	}
 	else
 	{// 移動
@@ -311,6 +338,29 @@ void CPlayer::Update()
 
 	// 回転
 	Rotate();
+
+	if (pKeyboard->GetRelease(DIK_LSHIFT)
+		&& m_pWire->GetWireMode() == CWire::MODE_HANGING)
+	{
+		pSound->PlaySound(CSound::SOUND_LABEL_SE_JUMP001);
+		m_pWire->SetWireMode(CWire::MODE_STOP);
+		D3DXVECTOR3 vecMove = pos - GetPosOld();
+		D3DXVECTOR3 rotMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		D3DXVECTOR3 rot = GetRot();
+		rot.y = CCalculation::RotNormalization((rot.y - D3DX_PI));
+
+		float fLength = sqrtf((vecMove.x * vecMove.x) + (vecMove.y * vecMove.y) + (vecMove.z * vecMove.z));
+		rotMove.x = atan2f(sqrtf((vecMove.x * vecMove.x) + (vecMove.z * vecMove.z)), vecMove.y);
+
+		// 位置の設定
+		vecMove.z = sinf(rotMove.x) * cosf(rot.y) * fLength;
+		vecMove.x = sinf(rotMove.x) * sinf(rot.y) * fLength;
+		vecMove.y = cosf(rotMove.x) * fLength;
+
+		m_pMove->SetSpeed(100.0f);
+		m_pMove->Moving(vecMove);
+		m_pMove->SetSpeed(fSPEED);
+	}
 
 	if (pMotion != nullptr
 		&& !pMotion->GetMotion())
@@ -346,29 +396,69 @@ void CPlayer::Update()
 	m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_NONE, true);
 	m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_ENEMY, true);
 
-	//if (m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL, true))
-	//{
-	//	CCollision_Rectangle3D::EState state = m_pCollisionRectangle3D->GetState();
+	if (m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_SCOREITEM, false))
+	{
+		// アイテムの取得
+		CScoreItem *pItem = (CScoreItem*)m_pCollisionRectangle3D->GetCollidedObj();
 
-	//	if (state == CCollision_Rectangle3D::STATE_Y)
-	//	{
-	//		m_fGravity = 0.0f;
+		if (pItem->GetUse())
+		{// スコアの取得
+			CScore *pScore = CGame::GetScore();
+			pScore->AddScore(pItem->Acquisition(600));
+			pSound->PlaySound(CSound::SOUND_LABEL_SE_COIN000);
+		}
+	}
 
-	//		D3DXVECTOR3 move = m_pMove->GetMove();
-	//		move.y = 0.0f;
-	//		m_pMove->SetMove(move);
-	//	}
+	if (m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL, true))
+	{
+		CCollision_Rectangle3D::EState state = m_pCollisionRectangle3D->GetState();
+		bool bPlusMinus = m_pCollisionRectangle3D->GetPlusMinus();
 
-	//	if ((state == CCollision_Rectangle3D::STATE_X
-	//		|| state == CCollision_Rectangle3D::STATE_Y
-	//		|| state == CCollision_Rectangle3D::STATE_Z)
-	//		&& m_pWire->GetWireMode() == CWire::MODE_HANGING)
-	//	{
-	//		//m_pWire->SetWireMode(CWire::MODE_STOP);
-	//	}
-	//}
+		if (state == CCollision_Rectangle3D::STATE_Y)
+		{
+			m_fGravity = 0.0f;
 
-	//m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL);
+			D3DXVECTOR3 move = m_pMove->GetMove();
+			move.y = 0.0f;
+			m_pMove->SetMove(move);
+		}
+
+		if ((state == CCollision_Rectangle3D::STATE_X
+			|| state == CCollision_Rectangle3D::STATE_Y
+			|| state == CCollision_Rectangle3D::STATE_Z)
+			&& m_pWire->GetWireMode() == CWire::MODE_HANGING)
+		{
+			// m_pWire->SetWireMode(CWire::MODE_STOP);
+
+			/*D3DXVECTOR3 distance = m_pCollisionRectangle3D->GetCollidedObj()->GetPos() - GetPos();
+			D3DXVECTOR3 rotDiff = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			rotDiff.y = atan2f(distance.x, distance.z);
+			rotDiff.x = D3DX_PI * 0.5f;
+
+			if (state == CCollision_Rectangle3D::STATE_X
+				&& bPlusMinus)
+			{
+				SetRot(rotDiff);
+			}
+			else if (state == CCollision_Rectangle3D::STATE_X
+				&& !bPlusMinus)
+			{
+				SetRot(rotDiff);
+			}
+			else if (state == CCollision_Rectangle3D::STATE_Z
+				&& bPlusMinus)
+			{
+				SetRot(rotDiff);
+			}
+			else if (state == CCollision_Rectangle3D::STATE_Z
+				&& !bPlusMinus)
+			{
+				SetRot(rotDiff);
+			}*/
+		}
+	}
+
+	m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_3DMODEL);
 
 	// 武器との当たり判定
 	bool bCollisionWeapon = m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_WEAPON, false);
@@ -646,9 +736,15 @@ void CPlayer::Rotate()
 {
 	// 向きの取得
 	D3DXVECTOR3 rot = GetRot();
+	float fFriction = 0.5f;
+
+	if (m_pWire->GetWireMode() == CWire::MODE_HANGING)
+	{
+		fFriction = 0.1f;
+	}
 
 	// 向きの更新
-	rot.y += (m_rotDest.y - rot.y) * 0.5f;
+	rot.y += (m_rotDest.y - rot.y) * fFriction;
 
 	// 向きの正規化
 	rot.y = CCalculation::RotNormalization(rot.y);

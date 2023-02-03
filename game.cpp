@@ -31,16 +31,19 @@
 #include "weapon_obj.h"
 #include "collision_rectangle3D.h"
 #include "debug_proc.h"
-#include "wire.h"
 #include "map_manager.h"
+#include "score_item.h"
+#include "score.h"
+#include "time.h"
+#include "sound.h"
 
 //*****************************************************************************
 // 静的メンバ変数宣言
 //*****************************************************************************
 CPlayer *CGame::m_pPlayer = nullptr;					// プレイヤークラス
 CMesh3D *CGame::m_pMesh3D;								// メッシュクラス
-CMotionEnemy *CGame::m_pMotionModel3D;					// モーションモデルクラス
-CWire *CGame::m_pWire;
+CScore *CGame::m_pScore = nullptr;						// スコアインスタンス
+CTime *CGame::m_pTime = nullptr;						// タイム
 D3DXCOLOR CGame::fogColor;								// フォグカラー
 float CGame::fFogStartPos;								// フォグの開始点
 float CGame::fFogEndPos;								// フォグの終了点
@@ -79,6 +82,10 @@ HRESULT CGame::Init()
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = CApplication::GetRenderer()->GetDevice();
 
+	// サウンド情報の取得
+	CSound *pSound = CApplication::GetSound();
+	pSound->PlaySound(CSound::SOUND_LABEL_BGM001);
+
 	// 重力の値を設定
 	CCalculation::SetGravity(0.2f);
 
@@ -93,49 +100,50 @@ HRESULT CGame::Init()
 	pSphere->SetBlock(CMesh3D::DOUBLE_INT(100, 100));
 	pSphere->SetRadius(50000.0f);
 	pSphere->SetSphereRange(D3DXVECTOR2(D3DX_PI * 2.0f, D3DX_PI * -0.5f));
+	pSphere->LoadTex(1);
 
 	// プレイヤーの設定
 	m_pPlayer = CPlayer::Create();
 	m_pPlayer->SetMotion("data/MOTION/motion.txt");
 	m_pPlayer->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 
-	// 敵の設置
-	m_pMotionModel3D = CMotionEnemy::Create();
-	m_pMotionModel3D->SetMotion("data/MOTION/motion.txt");
-	m_pMotionModel3D->SetPos(D3DXVECTOR3(100.0f, 0.0f, 0.0f));
-	CMotionEnemy *pMotionModel3D = CMotionEnemy::Create();
-	pMotionModel3D->SetMotion("data/MOTION/motion.txt");
-	pMotionModel3D->SetPos(D3DXVECTOR3(-100.0f, 0.0f, 0.0f));
+	// スコア
+	m_pScore = CScore::Create(10, false);
+	m_pScore->SetScore(0);
+	m_pScore->SetPos(D3DXVECTOR3(1280.0f, m_pScore->GetSize().y / 2.0f, 0.0f));
+
+	// タイム
+	m_pTime = CTime::Create(3);
+	m_pTime->SetTime(120);
+	m_pTime->SetTimeAdd(false);
+	m_pTime->SetPos(D3DXVECTOR3(640.0f, m_pTime->GetSize().y / 2.0f, 0.0f));
 
 	// カメラの追従設定(目標 : プレイヤー)
 	CCamera *pCamera = CApplication::GetCamera();
 	pCamera->SetFollowTarget(m_pPlayer, 1.0);
-	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 0.0f, -500.0f));
+	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 50.0f, -200.0f));
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
 	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 
 	// カメラの追従設定(目標 : プレイヤー)
 	pCamera = CApplication::GetMapCamera();
 	pCamera->SetFollowTarget(m_pPlayer, 1.0);
-	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 10000.0f, 0.0f));
+	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 5000.0f, -1.0f));
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 	pCamera->SetViewSize(0, 0, 250, 250);
 	pCamera->SetUseRoll(false, true);
 	pCamera->SetAspect(D3DXVECTOR2(10000.0f, 10000.0f));
 
-	// 武器のの設置
-	CWeaponObj *pWeapon = CWeaponObj::Create();
-	pWeapon->SetPos(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
-	pWeapon->SetType(11);
-	pWeapon->SetWeaponType(CWeaponObj::WEAPONTYPE_KNIFE);
-	pWeapon->SetAttack(5);
-	CCollision_Rectangle3D *pCollision = pWeapon->GetCollision();
-	pCollision->SetSize(D3DXVECTOR3(10.0f, 36.0f, 10.0f));
-	pCollision->SetPos(D3DXVECTOR3(0.0f, 18.0f, 0.0f));
-
-	// ワイヤー
-	m_pWire = CWire::Create();
-	m_pWire->SetPos(D3DXVECTOR3(0.0f, 10.0f, 200.0f));
+	//// 武器のの設置
+	//CWeaponObj *pWeapon = CWeaponObj::Create();
+	//pWeapon->SetPos(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
+	//pWeapon->SetType(11);
+	//pWeapon->SetWeaponType(CWeaponObj::WEAPONTYPE_KNIFE);
+	//pWeapon->SetAttack(5);
+	//CCollision_Rectangle3D *pCollision = pWeapon->GetCollision();
+	//pCollision->SetSize(D3DXVECTOR3(10.0f, 36.0f, 10.0f));
+	//pCollision->SetPos(D3DXVECTOR3(0.0f, 18.0f, 0.0f));
 
 	// マウスカーソルを消す
 	pMouse->SetShowCursor(false);
@@ -177,6 +185,12 @@ void CGame::Uninit()
 	// デバイスの取得
 	LPDIRECT3DDEVICE9 pDevice = CApplication::GetRenderer()->GetDevice();
 
+	// サウンド情報の取得
+	CSound *pSound = CApplication::GetSound();
+
+	// サウンド終了
+	pSound->StopSound();
+
 	// フォグの有効設定
 	pDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
 
@@ -199,11 +213,6 @@ void CGame::Uninit()
 		m_pMesh3D = nullptr;
 	}
 
-	if (m_pWire != nullptr)
-	{
-		m_pWire->Uninit();
-	}
-
 	// スコアの解放
 	Release();
 }
@@ -215,62 +224,20 @@ void CGame::Uninit()
 //=============================================================================
 void CGame::Update()
 {
-#ifdef _DEBUG
-	CDebugProc::Print("敵の体力 : %d\n", m_pMotionModel3D->GetLife());
+	// カメラの追従設定
+	CCamera *pCamera = nullptr;
 
 	// キーボードの取得
 	CKeyboard *pKeyboard = CApplication::GetKeyboard();
 
+#ifdef _DEBUG
+
 	// カメラの追従設定
-	CCamera *pCamera = CApplication::GetCamera();
+	pCamera = CApplication::GetCamera();
 
-	if (pKeyboard->GetTrigger(DIK_F3))
+	if (pKeyboard->GetTrigger(DIK_F10))
 	{
-		CApplication::SetNextMode(CApplication::MODE_RESULT);
-	}
-	if (pKeyboard->GetTrigger(DIK_F4))
-	{
-		CCamera *pCamera = CApplication::GetCamera();
-
-		if (!pCamera->GetTargetPosR())
-		{
-			pCamera->SetTargetPosR(m_pMotionModel3D);
-			pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 50.0f, 0.0f));
-			pCamera->SetPosRDiff(D3DXVECTOR2(100.0f, 200.0f));
-		}
-		else
-		{
-			pCamera->SetTargetPosR(false);
-		}
-	}
-	if (pKeyboard->GetTrigger(DIK_F5))
-	{
-		D3DXVECTOR3 vec = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-
-		switch (m_pWire->GetWireMode())
-		{
-		case CWire::MODE_STOP:
-			m_pWire->SetWireMode(CWire::MODE_FIRING);
-			vec = pCamera->GetPosV() - pCamera->GetPosR();
-			break;
-
-		case CWire::MODE_FIRING:
-			m_pWire->SetWireMode(CWire::MODE_ATTRACT);
-			pCamera->SetFollowTarget(m_pWire->GetStart(), 1.0);
-			vec = m_pWire->GetStart()->GetPos() - m_pWire->GetGoal()->GetPos();
-			break;
-
-		case CWire::MODE_ATTRACT:
-			m_pWire->SetWireMode(CWire::MODE_FIRING);
-			vec = pCamera->GetPosV() - pCamera->GetPosR();
-			break;
-
-		default:
-			break;
-		}
-		
-		D3DXVec3Normalize(&vec, &vec);
-		m_pWire->SetMoveVec(-vec);
+		pCamera->Shake(60, 50.0f);
 	}
 
 	if (pKeyboard->GetPress(DIK_LSHIFT))
@@ -279,6 +246,26 @@ void CGame::Update()
 	}
 
 #endif // _DEBUG
+
+	if (pKeyboard->GetTrigger(DIK_F3))
+	{
+		m_pTime->SetTime(0);
+	}
+
+	if (m_pTime->GetTimeEnd()
+		&& m_bGame)
+	{
+		m_bGame = false;
+
+		// カメラの追従設定
+		pCamera = CApplication::GetCamera();
+		pCamera->SetFollowTarget(false);
+		pCamera = CApplication::GetMapCamera();
+		pCamera->SetFollowTarget(false);
+
+		// スコアの設定
+		CApplication::SetScore(m_pScore->GetScore());
+	}
 
 	if (!m_bGame)
 	{

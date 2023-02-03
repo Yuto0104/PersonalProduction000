@@ -65,7 +65,8 @@ m_fGravity(0.0f),
 m_fSpeed(0.0f),
 m_nNumMotion(0),
 m_nLife(0),
-m_nCntState(0),			
+m_nCntState(0),
+m_nCntAction(0),
 m_bDamage(false)
 {
 
@@ -173,6 +174,19 @@ void CMotionEnemy::Update()
 		}
 	}
 
+	m_nCntAction--;
+
+	if (m_nCntAction <= 0)
+	{
+		m_nCntAction = 0;
+
+		int nAction = rand() % MAX_ACTION;
+
+		m_EAction = (ACTION_TYPE)nAction;
+
+
+	}
+
 	// 位置の取得
 	D3DXVECTOR3 pos = GetPos();
 	D3DXVECTOR3 rot = GetRot();
@@ -257,6 +271,37 @@ void CMotionEnemy::Hit(const int nAttack)
 			pParts->SetColor(D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f));
 		}
 	}				
+}
+
+//=============================================================================
+// 行動の設定
+// Author : 唐﨑結斗
+// 概要 : 行動を設定する
+//=============================================================================
+void CMotionEnemy::SetAction()
+{
+	// アクションを行う時間
+	int nTimeAction = 0;
+
+	switch (m_EAction)
+	{
+	case CMotionEnemy::NEUTRAL_ACTION:
+		nTimeAction = rand() % (60 * 5);
+		break;
+
+	case CMotionEnemy::MOVE_ACTION:
+		nTimeAction = rand() % (60 * 3);
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	// カウントの更新
+	m_nCntAction = nTimeAction;
+
+
 }
 
 //=============================================================================

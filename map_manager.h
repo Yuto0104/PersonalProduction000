@@ -66,6 +66,7 @@ private:
 	//--------------------------------------------------------------------
 	void LoadFieldMesh(char *pFileName);
 	void LoadSkayBox(char *pFileName);
+	void LoadScoreItem(char *pFileName);
 };
 
 #endif

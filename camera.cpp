@@ -57,6 +57,8 @@ CCamera::CCamera()
 	m_fViewing = 0.0f;								// 視野角
 	m_fRotMove = 0.0f;								// 移動方向
 	m_fCoeffFllow = 0.0f;							// 追従の減衰係数
+	m_fShake = 0.0f;								// 揺れの量
+	m_nCntShake = 0;								// 揺れのカウント
 	m_bUseRollX = true;								// X軸の回転の使用状況
 	m_bUseRollY = true;								// Y軸の回転の使用状況
 	m_bFllow = false;								// 追従を行うか
@@ -103,7 +105,7 @@ HRESULT CCamera::Init()
 	// 移動クラス(角度)のメモリ確保
 	m_pRoll = new CMove;
 	assert(m_pRoll != nullptr);
-	m_pRoll->SetMoving(0.01f, 5.0f, 0.0f, 0.1f);
+	m_pRoll->SetMoving(0.005f, 5.0f, 0.0f, 0.1f);
 
 	// アスペクト比の設定
 	m_aspect = D3DXVECTOR2((float)CRenderer::SCREEN_WIDTH, (float)CRenderer::SCREEN_HEIGHT);
@@ -181,10 +183,26 @@ void CCamera::Set()
 	//rotAdd.y = CCalculation::RotNormalization(rotAdd.y);
 	//rotAdd.z = CCalculation::RotNormalization(rotAdd.z);
 
+	D3DXVECTOR3 adjust = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+
+	if (m_nCntShake > 0)
+	{
+		m_nCntShake--;
+
+		adjust.x = (float)(rand() % (int)(m_fShake * 200) / 100) - m_fShake;
+		adjust.y = (float)(rand() % (int)(m_fShake * 200) / 100) - m_fShake;
+		adjust.z = (float)(rand() % (int)(m_fShake * 200) / 100) - m_fShake;
+
+		if (m_nCntShake <= 0)
+		{
+			m_nCntShake = 0;
+		}
+	}
+
 	// ビューマトリックスの作成
 	D3DXMatrixLookAtLH(&m_mtxView,
-		&m_posV,
-		&m_posR,
+		&(m_posV + adjust),
+		&(m_posR + adjust),
 		&m_vecU);
 
 	// ワールドマトリックスの設定
@@ -340,6 +358,17 @@ void CCamera::SetViewSize(DWORD X, DWORD Y, int fWidth, int fHeight)
 	m_viewport.Y = Y;					//ビューポートの左上Y座標
 	m_viewport.Width = fWidth;			//ビューポートの幅
 	m_viewport.Height = fHeight;		//ビューポートの高さ
+}
+
+//=============================================================================
+// マトリックス計算を行う
+// Author : 唐﨑結斗
+// 概要 : 
+//=============================================================================
+void CCamera::Shake(const int nTime, const float fShake)
+{
+	m_nCntShake = nTime;
+	m_fShake = fShake;
 }
 
 //=============================================================================

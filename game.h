@@ -18,8 +18,8 @@
 //*****************************************************************************
 class CPlayer;
 class CMesh3D;
-class CMotionEnemy;
-class CWire;
+class CScore;
+class CTime;
 
 //=============================================================================
 // ゲームクラス
@@ -32,6 +32,9 @@ public:
 	//--------------------------------------------------------------------
 	// 静的メンバ関数
 	//--------------------------------------------------------------------
+	static CPlayer *GetPlayer() { return m_pPlayer; }				// プレイヤー
+	static CScore *GetScore() { return m_pScore; }					// スコア
+	static CTime *GetTime() { return m_pTime; }						// タイム
 	static void SetGame(const bool bGame) { m_bGame = bGame; }		// ゲームの状況の設定
 	static CMesh3D *GetMesh() { return m_pMesh3D; }					// メッシュのゲッター
 
@@ -46,8 +49,8 @@ public:
 	//--------------------------------------------------------------------
 	static CPlayer *m_pPlayer;						// プレイヤークラス
 	static CMesh3D *m_pMesh3D;						// メッシュクラス
-	static CMotionEnemy *m_pMotionModel3D;			// モーションモデルクラス
-	static CWire *m_pWire;
+	static CScore *m_pScore;						// スコア
+	static CTime *m_pTime;							// タイム
 	static D3DXCOLOR fogColor;						// フォグカラー
 	static float fFogStartPos;						// フォグの開始点
 	static float fFogEndPos;						// フォグの終了点

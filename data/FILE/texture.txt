@@ -1,11 +1,11 @@
 // テクスチャの最大数
-MAX_TEXTURE = 13
+MAX_TEXTURE = 16
 
 //***************************
 // TEXTUREファイル名の読み込み
 //***************************
 TEXTURE_FILENAME = data/TEXTURE/UV_tex.png						# [0]
-TEXTURE_FILENAME = data/TEXTURE/sky002.jpg						# [1]
+TEXTURE_FILENAME = data/TEXTURE/sky000.jpg						# [1]
 TEXTURE_FILENAME = data/TEXTURE/number003.png					# [2]
 TEXTURE_FILENAME = data/TEXTURE/bill000.png						# [3]
 TEXTURE_FILENAME = data/TEXTURE/bill001.jpg						# [4]
@@ -17,4 +17,7 @@ TEXTURE_FILENAME = data/TEXTURE/block008.png					# [9]
 TEXTURE_FILENAME = data/TEXTURE/iron000.png						# [10]
 TEXTURE_FILENAME = data/TEXTURE/bill004.png						# [11]
 TEXTURE_FILENAME = data/TEXTURE/wall001.jpg						# [12]
+TEXTURE_FILENAME = data/TEXTURE/Title000.png					# [13]
+TEXTURE_FILENAME = data/TEXTURE/PressEnter000.png				# [14]
+TEXTURE_FILENAME = data/TEXTURE/NewGame000.png					# [15]
 

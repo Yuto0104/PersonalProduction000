@@ -56,6 +56,10 @@ public:
 		SOUND_LABEL_SE_DECIDE,		// 次へ音
 		SOUND_LABEL_SE_SELECT,		// 選択音
 		SOUND_LABEL_SE_PAUSE,		// ポーズ音
+		SOUND_LABEL_SE_JUMP000,		// ジャンプ音(0)
+		SOUND_LABEL_SE_JUMP001,		// ジャンプ音(1)
+		SOUND_LABEL_SE_SHOT000,		// ショット音
+		SOUND_LABEL_SE_COIN000,		// コイン音
 		SOUND_LABEL_MAX,
 	};
 

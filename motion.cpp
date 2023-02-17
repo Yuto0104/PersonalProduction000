@@ -629,6 +629,7 @@ void CMotion::Uninit(void)
 			m_pParts.at(i) = nullptr;
 		}
 	}
+
 	m_pParts.clear();
 }
 //=============================================================================

@@ -17,7 +17,6 @@
 // 前方宣言
 //*****************************************************************************
 class CMove;
-class CLine;
 
 //=============================================================================
 // ワイヤークラス
@@ -88,9 +87,9 @@ private:
 	CModelObj *m_pStart;						// スタート地点
 	CModelObj *m_pGoal;							// ゴール地点
 	CModelObj *m_pDecision;						// 判定用オブジェクト
+	CModel3D *m_pWireModel;						// モデル情報
 	CMove *m_pMove;								// 移動情報
 	CMove *m_pRoll;								// 回転情報
-	CLine *m_pLine;								// ワイヤー
 	WIRE_MODE m_EMode;							// ワイヤーモード
 	WIRE_MODE m_ENextMode;						// 次のワイヤーモード
 	CObject::EObjectType m_ETargetObjType;		// ターゲットのオブジェクトタイプ

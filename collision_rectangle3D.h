@@ -60,6 +60,7 @@ public:
 	bool ToRectangle(CCollision *pTarget, bool bExtrude);						// ‹éŒ`‚Æ‚Ì“–‚½‚è”»’è
 	EState GetState() { return m_state; }										// “–‚½‚Á‚½êŠ‚Ìæ“¾
 	bool GetPlusMinus() { return m_bPlusMinus; }								// ³•‰”»’è‚Ìæ“¾
+	void DotCross(CCollision *pTarget);
 
 #ifdef _DEBUG
 	void SetLine();					// ƒ‰ƒCƒ“‚Ìİ’è

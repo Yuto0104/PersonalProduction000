@@ -376,6 +376,36 @@ bool CCollision_Rectangle3D::ToRectangle(CCollision *pTarget, bool bExtrude)
 	return bColision;
 }
 
+//=============================================================================
+// ラインの設置
+// Author : 唐﨑結斗
+// 概要 : ラインを矩形状に設置
+//=============================================================================
+void CCollision_Rectangle3D::DotCross(CCollision * pTarget)
+{
+	// 自分の情報を取得する
+	D3DXVECTOR3 pos = GetParent()->GetPos() + GetPos();
+	D3DXVECTOR3 posOld = GetParent()->GetPosOld() + GetPos();
+	D3DXVECTOR3 size = GetSize() / 2.0f;
+
+	// 目標の情報
+	D3DXVECTOR3 posTarget = pTarget->GetParent()->GetPos() + GetPos();
+	D3DXVECTOR3 posOldTarget = pTarget->GetParent()->GetPosOld() + GetPos();
+	D3DXVECTOR3 sizeTarget = pTarget->GetSize() / 2.0f;
+
+	// 頂点の算出
+	D3DXVECTOR3 aVec[12] = { D3DXVECTOR3(0.0f,0.0f,0.0f) };
+	aVec[0] = D3DXVECTOR3(posTarget.x - sizeTarget.x, posTarget.y, posTarget.z - sizeTarget.z);
+	aVec[1] = D3DXVECTOR3(posTarget.x + sizeTarget.x, posTarget.y, posTarget.z - sizeTarget.z);
+	aVec[2] = D3DXVECTOR3(posTarget.x - sizeTarget.x, posTarget.y, posTarget.z + sizeTarget.z);
+	aVec[3] = D3DXVECTOR3(posTarget.x + sizeTarget.x, posTarget.y, posTarget.z + sizeTarget.z);
+
+	for (int nCnt = 0; nCnt < 4; nCnt++)
+	{
+
+	}
+}
+
 #ifdef _DEBUG
 //=============================================================================
 // ラインの設置

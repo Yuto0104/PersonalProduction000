@@ -185,7 +185,7 @@ void CRenderer::Draw()
 		m_pD3DDevice->SetRenderState(D3DRS_ALPHAREF, 0x01);
 
 		// •`‰æˆ—
-		CSuper::DrawAll(CSuper::TYPE_MAP);
+		//CSuper::DrawAll(CSuper::TYPE_MAP);
 		CSuper::DrawAll(CSuper::TYPE_GAME);
 
 		// “–‚½‚è”»’è‚Ì•`‰æ

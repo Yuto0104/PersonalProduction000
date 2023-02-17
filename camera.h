@@ -66,6 +66,7 @@ public:
 	D3DXVECTOR3 GetRot() { return m_rot; }
 	D3DXMATRIX GetMtxView() { return m_mtxView; }
 	D3DXMATRIX GetMtxProj() { return m_mtxProj; }
+	CObject	*GetTarget() { return m_pTarget; }
 	void SetPosVOffset(const D3DXVECTOR3 posVOffset);
 	void SetPosROffset(const D3DXVECTOR3 posROffset);
 	void SetRot(const D3DXVECTOR3 rot);

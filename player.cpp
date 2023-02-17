@@ -242,8 +242,11 @@ void CPlayer::Update()
 
 	if (pKeyboard->GetTrigger(DIK_SPACE))
 	{// ジャンプ
-		pSound->PlaySound(CSound::SOUND_LABEL_SE_JUMP000);
-		Jump();
+		if (m_fGravity == 0.0f)
+		{
+			pSound->PlaySound(CSound::SOUND_LABEL_SE_JUMP000);
+			Jump();
+		}	
 	}
 
 	if (m_pWire->GetTargetObjType() == CObject::OBJTYPE_3DMODEL)
@@ -257,29 +260,10 @@ void CPlayer::Update()
 		&& m_pWire->GetWireMode() == CWire::MODE_STOP
 		&& m_fGravity != 0.0f)
 	{// ワイヤーの射出
-		/*D3DXVECTOR3 vec = m_pWire->HangingSearch();
-
-		if (vec != D3DXVECTOR3(0.0f, 0.0f, 0.0f))
-		{
-			m_pWire->SetWireMode(CWire::MODE_FIRING);
-			m_pWire->SetMoveVec(vec);
-		}*/
-
 		pSound->PlaySound(CSound::SOUND_LABEL_SE_SHOT000);
 		D3DXVECTOR3 vec = pCamera->GetPosR() - pCamera->GetPosV();
 		m_pWire->SetWireMode(CWire::MODE_FIRING);
 		m_pWire->SetMoveVec(vec);
-	}
-	else if (pKeyboard->GetTrigger(DIK_F)
-		&& m_pWire->GetWireMode() == CWire::MODE_FIRING)
-	{
-		/*m_pWire->SetWireMode(CWire::MODE_ATTRACT);
-		D3DXVECTOR3 vec = m_pWire->GetStart()->GetPos() - m_pWire->GetGoal()->GetPos();
-		m_pWire->SetMoveVec(-vec);
-		m_pMove->SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));*/
-
-		m_pWire->SetWireMode(CWire::MODE_HANGING);
-		m_pWire->SetHanging();
 	}
 
 	// 重力の設定
@@ -421,6 +405,11 @@ void CPlayer::Update()
 			D3DXVECTOR3 move = m_pMove->GetMove();
 			move.y = 0.0f;
 			m_pMove->SetMove(move);
+
+			if (m_pWire->GetWireMode() == CWire::MODE_FIRING)
+			{
+				m_pWire->SetWireMode(CWire::MODE_STOP);
+			}
 		}
 
 		if ((state == CCollision_Rectangle3D::STATE_X
@@ -542,6 +531,11 @@ void CPlayer::Update()
 		D3DXVECTOR3 move = m_pMove->GetMove();
 		move.y = 0.0f;
 		m_pMove->SetMove(move);
+
+		if (m_pWire->GetWireMode() == CWire::MODE_FIRING)
+		{
+			m_pWire->SetWireMode(CWire::MODE_STOP);
+		}
 	}
 	
 	// 位置の取得

@@ -24,6 +24,7 @@
 #include "debug_proc.h"
 #include "game.h"
 #include "player.h"
+#include "model3D.h"
 
 //--------------------------------------------------------------------
 // 定数定義
@@ -61,9 +62,9 @@ CWire *CWire::Create()
 CWire::CWire() : m_pStart(nullptr),			// スタート地点
 m_pGoal(nullptr),							// ゴール地点
 m_pDecision(nullptr),						// 判定用オブジェクト
+m_pWireModel(nullptr),						// モデル情報
 m_pMove(nullptr),							// 移動情報
 m_pRoll(nullptr),							// 回転情報
-m_pLine(nullptr),							// ワイヤー
 m_EMode(MODE_STOP),							// ワイヤーモード
 m_ENextMode(MODE_STOP),						// 次のワイヤーモード
 m_quat(),									// クォータニオン
@@ -126,9 +127,6 @@ HRESULT CWire::Init()
 	m_pCollision = m_pDecision->GetCollision();
 	m_pCollision->SetSize(D3DXVECTOR3(600.0f, 10.0f, 600.0f));
 
-	// ライン
-	m_pLine = CLine::Create();
-
 	// 移動クラスのメモリ確保
 	m_pMove = new CMove;
 	assert(m_pMove != nullptr);
@@ -138,6 +136,12 @@ HRESULT CWire::Init()
 	m_pRoll = new CMove;
 	assert(m_pRoll != nullptr);
 	m_pRoll->SetMoving(10.0f, 1000.0f, 0.0f, 0.01f);
+
+	// ワイヤーモデル
+	m_pWireModel = CModel3D::Create();
+	m_pWireModel->SetModelID(38);
+	m_pWireModel->SetLighting(false);
+	m_pWireModel->SetShadow(false);
 
 	return E_NOTIMPL;
 }
@@ -167,10 +171,10 @@ void CWire::Uninit()
 		m_pDecision = nullptr;
 	}
 
-	if (m_pLine != nullptr)
+	if (m_pWireModel != nullptr)
 	{// 終了
-		m_pLine->Uninit();
-		m_pLine = nullptr;
+		m_pWireModel->Uninit();
+		m_pWireModel = nullptr;
 	}
 
 	if (m_pMove != nullptr)
@@ -267,6 +271,19 @@ void CWire::Update()
 
 	// ワイヤーの更新
 	CModelObj::Update();
+
+	// 向きの設定
+	D3DXVECTOR3 vec = m_pGoal->GetPos() - m_pStart->GetPos();
+	D3DXVECTOR3 rotWire = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	rotWire.x = atan2f(sqrtf((vec.x * vec.x) + (vec.z * vec.z)) , vec.y);
+	rotWire.y = atan2f(vec.x, vec.z);
+	m_pWireModel->SetRot(rotWire);
+
+	// サイズの設定
+	m_pWireModel->SetSize(D3DXVECTOR3(1.0f, m_fLength, 1.0f));
+
+	// モデルの更新
+	m_pWireModel->Update();
 }
 
 //=============================================================================
@@ -317,10 +334,8 @@ void CWire::Draw()
 		D3DXMatrixIdentity(&m_mtxRot);
 	}
 
-	if (m_pLine != nullptr)
-	{// ラインの設定
-		m_pLine->SetLine(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), m_pStart->GetPos(), m_pGoal->GetPos(), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-	}
+	// モデルの描画
+	m_pWireModel->Draw(m_pStart->GetMtxWorld());
 }
 
 //=============================================================================
@@ -369,15 +384,29 @@ void CWire::Move()
 	m_pMove->Moving(m_moveVec);
 	pos += m_pMove->GetMove();
 
+	// 方向ベクトル
+	D3DXVECTOR3 vec = GetGoal()->GetPos() - GetStart()->GetPos();
+
 	switch (m_EMode)
 	{
 	case CWire::MODE_STOP:
+		m_fLength = 0.0f;
+		m_pWireModel->SetSize(D3DXVECTOR3(0.0f,0.0f,0.0f));
 		m_pMove->SetMove(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 		break;
 
 	case CWire::MODE_FIRING:
 	case CWire::MODE_PULL:
 		m_pGoal->SetPos(pos);
+
+		// 長さの設定
+		m_fLength = sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+
+		if (m_fLength >= 1000.0f)
+		{
+			m_EMode = MODE_STOP;
+		}
+
 		break;
 
 	case CWire::MODE_ATTRACT:
@@ -406,7 +435,7 @@ void CWire::Hanging()
 	D3DXVECTOR3 move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
 	//角加速度
-	m_fAccele = (-1 * 0.8f / m_fLength) * sinf(m_rot.x);
+	m_fAccele = (-1 * 0.6f / m_fLength) * sinf(m_rot.x);
 
 	// 角度の加算
 	m_fAddRot += m_fAccele;

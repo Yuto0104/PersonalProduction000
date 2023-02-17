@@ -1,5 +1,5 @@
 // モデルの最大数
-MAX_TYPE = 38
+MAX_TYPE = 39
 
 //***************************
 // Xファイル名の読み込み
@@ -42,3 +42,4 @@ MODEL_FILENAME = data/MODEL/bill006.x					# [34]
 MODEL_FILENAME = data/MODEL/coin000.x					# [35]
 MODEL_FILENAME = data/MODEL/coin001.x					# [36]
 MODEL_FILENAME = data/MODEL/coin002.x					# [37]
+MODEL_FILENAME = data/MODEL/thread.x					# [38]

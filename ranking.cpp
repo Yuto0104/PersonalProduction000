@@ -142,7 +142,7 @@ HRESULT CRanking::Init(int nMaxRanking, int nNewScore)
 		pFailObj->SetPos(m_pos);
 		pFailObj->SetRot(m_rot);
 		pFailObj->SetSize(D3DXVECTOR3(500.0f, 70.0f, 0.0f));
-		pFailObj->LoadTex(20);
+		pFailObj->LoadTex(-1);
 		pFailObj->SetCol(D3DXCOLOR(1.0f, 0.1f, 0.1f, 1.0f));
 	}
 

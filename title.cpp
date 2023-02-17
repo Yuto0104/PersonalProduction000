@@ -17,6 +17,10 @@
 #include "keyboard.h"
 #include "object2D.h"
 #include "sound.h"
+#include "map_manager.h"
+#include "camera.h"
+#include "sphere.h"
+#include "model_obj.h"
 
 //=============================================================================
 // コンストラクタ
@@ -53,6 +57,22 @@ HRESULT CTitle::Init()
 	CSound *pSound = CApplication::GetSound();
 	pSound->PlaySound(CSound::SOUND_LABEL_BGM000);
 
+	// マップの設定
+	CMapManager *pMap = CMapManager::Create();
+	pMap->SetMap("data/FILE/map000.txt");
+
+	// スカイボックスの設定
+	CSphere *pSphere = CSphere::Create();
+	pSphere->SetRot(D3DXVECTOR3(D3DX_PI, 0.0f, 0.0f));
+	pSphere->SetSize(D3DXVECTOR3(100.0f, 0, 100.0f));
+	pSphere->SetBlock(CMesh3D::DOUBLE_INT(100, 100));
+	pSphere->SetRadius(50000.0f);
+	pSphere->SetSphereRange(D3DXVECTOR2(D3DX_PI * 2.0f, D3DX_PI * -0.5f));
+	pSphere->LoadTex(1);
+
+	CModelObj *pModel = CModelObj::Create();
+	pModel->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+
 	m_pTitleLogo = CObject2D::Create();
 	m_pTitleLogo->SetPos(D3DXVECTOR3(640.0f, 280.0f, 0.0f));
 	m_pTitleLogo->SetSize(D3DXVECTOR3(640.0f, 200.0f, 0.0f));
@@ -64,6 +84,13 @@ HRESULT CTitle::Init()
 	m_pPressEnter->SetSize(D3DXVECTOR3(400.0f, 120.0f, 0.0f));
 	m_pPressEnter->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pPressEnter->LoadTex(14);
+
+	// カメラの追従設定(目標 : プレイヤー)
+	CCamera *pCamera = CApplication::GetCamera();
+	pCamera->SetFollowTarget(pModel, 1.0);
+	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 50.0f, -9000.0f));
+	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
+	pCamera->SetRot(D3DXVECTOR3(0.35f, 0.0f, 0.0f));
 
 	return S_OK;
 }
@@ -80,6 +107,11 @@ void CTitle::Uninit()
 
 	// サウンド終了
 	pSound->StopSound();
+
+	// カメラの追従設定
+	CCamera *pCamera = CApplication::GetCamera();
+	pCamera->SetFollowTarget(false);
+	pCamera->SetTargetPosR(false);
 
 	// スコアの解放
 	Release();
@@ -99,6 +131,11 @@ void CTitle::Update()
 	CSound *pSound = CApplication::GetSound();
 
 	FlashObj();
+
+	CCamera *pCamera = CApplication::GetCamera();
+	D3DXVECTOR3 rot = pCamera->GetRot();
+	rot.y += D3DX_PI / 180.0f * 0.1f;
+	pCamera->SetRot(rot);
 
 	if (m_bPressEnter
 		&& pKeyboard->GetTrigger(DIK_RETURN))

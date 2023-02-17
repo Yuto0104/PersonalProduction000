@@ -17,6 +17,10 @@
 #include "score.h"
 #include "ranking.h"
 #include "sound.h"
+#include "map_manager.h"
+#include "camera.h"
+#include "sphere.h"
+#include "model_obj.h"
 
 //=============================================================================
 // コンストラクタ
@@ -82,6 +86,29 @@ HRESULT CResult::Init()
 	m_pRanking->SetPos(D3DXVECTOR3(660.0f, 280.0f, 0.0f));
 	m_pRanking->SetWholeSize(D3DXVECTOR3(500.0f, 300.0f, 0.0f));
 
+	// マップの設定
+	CMapManager *pMap = CMapManager::Create();
+	pMap->SetMap("data/FILE/map000.txt");
+
+	// スカイボックスの設定
+	CSphere *pSphere = CSphere::Create();
+	pSphere->SetRot(D3DXVECTOR3(D3DX_PI, 0.0f, 0.0f));
+	pSphere->SetSize(D3DXVECTOR3(100.0f, 0, 100.0f));
+	pSphere->SetBlock(CMesh3D::DOUBLE_INT(100, 100));
+	pSphere->SetRadius(50000.0f);
+	pSphere->SetSphereRange(D3DXVECTOR2(D3DX_PI * 2.0f, D3DX_PI * -0.5f));
+	pSphere->LoadTex(1);
+
+	CModelObj *pModel = CModelObj::Create();
+	pModel->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+
+	// カメラの追従設定(目標 : プレイヤー)
+	CCamera *pCamera = CApplication::GetCamera();
+	pCamera->SetFollowTarget(pModel, 1.0);
+	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 50.0f, -9000.0f));
+	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
+	pCamera->SetRot(D3DXVECTOR3(0.35f, 0.0f, 0.0f));
+
 	return S_OK;
 }
 
@@ -98,6 +125,11 @@ void CResult::Uninit()
 	// サウンド終了
 	pSound->StopSound();
 
+	// カメラの追従設定
+	CCamera *pCamera = CApplication::GetCamera();
+	pCamera->SetFollowTarget(false);
+	pCamera->SetTargetPosR(false);
+
 	// スコアの解放
 	Release();
 }
@@ -111,6 +143,11 @@ void CResult::Update()
 {
 	// サウンド情報の取得
 	CSound *pSound = CApplication::GetSound();
+
+	CCamera *pCamera = CApplication::GetCamera();
+	D3DXVECTOR3 rot = pCamera->GetRot();
+	rot.y += D3DX_PI / 180.0f * 0.1f;
+	pCamera->SetRot(rot);
 
 	AutoTransition();
 

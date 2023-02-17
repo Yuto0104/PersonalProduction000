@@ -334,6 +334,7 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 
 	// ライトの作成
 	m_pLight = CLight::Create(D3DXVECTOR3(1.0f, -1.0f, 1.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	CLight::Create(D3DXVECTOR3(-1.0f, 1.0f, -1.0f), D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 
 	// フェードの設定
 	m_pFade = CFade::Create();

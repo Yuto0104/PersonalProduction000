@@ -1,5 +1,5 @@
 // モデルの最大数
-MAX_TYPE = 39
+MAX_TYPE = 49
 
 //***************************
 // Xファイル名の読み込み
@@ -43,3 +43,14 @@ MODEL_FILENAME = data/MODEL/coin000.x					# [35]
 MODEL_FILENAME = data/MODEL/coin001.x					# [36]
 MODEL_FILENAME = data/MODEL/coin002.x					# [37]
 MODEL_FILENAME = data/MODEL/thread.x					# [38]
+MODEL_FILENAME = data/MODEL/player001/00_body.x			# [39]
+MODEL_FILENAME = data/MODEL/player001/01_head.x			# [40]
+MODEL_FILENAME = data/MODEL/player001/02_rightArm.x		# [41]
+MODEL_FILENAME = data/MODEL/player001/03_rightHand.x	# [42]
+MODEL_FILENAME = data/MODEL/player001/04_leftArm.x		# [43]
+MODEL_FILENAME = data/MODEL/player001/05_leftHand.x		# [44]
+MODEL_FILENAME = data/MODEL/player001/06_rightLeg.x		# [45]
+MODEL_FILENAME = data/MODEL/player001/07_rightFoot.x	# [46]
+MODEL_FILENAME = data/MODEL/player001/08_leftLeg.x		# [47]
+MODEL_FILENAME = data/MODEL/player001/09_leftFoot.x		# [48]
+                                                           

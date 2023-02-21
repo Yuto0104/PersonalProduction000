@@ -104,7 +104,7 @@ HRESULT CGame::Init()
 
 	// プレイヤーの設定
 	m_pPlayer = CPlayer::Create();
-	m_pPlayer->SetMotion("data/MOTION/motion.txt");
+	m_pPlayer->SetMotion("data/MOTION/motion001.txt");
 	m_pPlayer->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 
 	// スコア

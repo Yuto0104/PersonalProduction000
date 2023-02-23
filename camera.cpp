@@ -445,26 +445,23 @@ void CCamera::Rotate(void)
 	CMouse *pMouse = CApplication::GetMouse();
 	D3DXVECTOR3 rollDir = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 
-	if (pMouse->GetPress(CMouse::MOUSE_KEY_LEFT)
-		|| pMouse->GetPress(CMouse::MOUSE_KEY_RIGHT))
-	{// マウスの移動量の取得
-		D3DXVECTOR3 mouseMove = D3DXVECTOR3(pMouse->GetMouseMove().y, pMouse->GetMouseMove().x, pMouse->GetMouseMove().z);
+	// マウスの移動量の取得
+	D3DXVECTOR3 mouseMove = D3DXVECTOR3(pMouse->GetMouseMove().y, pMouse->GetMouseMove().x, pMouse->GetMouseMove().z);
 
-		if (D3DXVec3Length(&mouseMove) > MIN_MOUSE_MOVED || D3DXVec3Length(&mouseMove) < -MIN_MOUSE_MOVED)
-		{// マウスの移動方向のノーマライズ
-			D3DXVec3Normalize(&mouseMove, &mouseMove);
+	if (D3DXVec3Length(&mouseMove) > MIN_MOUSE_MOVED || D3DXVec3Length(&mouseMove) < -MIN_MOUSE_MOVED)
+	{// マウスの移動方向のノーマライズ
+		D3DXVec3Normalize(&mouseMove, &mouseMove);
 
-			// 移動方向の算出
-			rollDir = mouseMove * (D3DX_PI / 180.0f);
+		// 移動方向の算出
+		rollDir = mouseMove * (D3DX_PI / 180.0f);
 
-			if (!m_bUseRollX)
-			{
-				rollDir.x = 0.0f;
-			}
-			if (!m_bUseRollY)
-			{
-				rollDir.y = 0.0f;
-			}
+		if (!m_bUseRollX)
+		{
+			rollDir.x = 0.0f;
+		}
+		if (!m_bUseRollY)
+		{
+			rollDir.y = 0.0f;
 		}
 	}
 

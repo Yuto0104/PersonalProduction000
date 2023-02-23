@@ -66,7 +66,7 @@ HRESULT CTitle::Init()
 	pSphere->SetRot(D3DXVECTOR3(D3DX_PI, 0.0f, 0.0f));
 	pSphere->SetSize(D3DXVECTOR3(100.0f, 0, 100.0f));
 	pSphere->SetBlock(CMesh3D::DOUBLE_INT(100, 100));
-	pSphere->SetRadius(50000.0f);
+	pSphere->SetRadius(10000.0f);
 	pSphere->SetSphereRange(D3DXVECTOR2(D3DX_PI * 2.0f, D3DX_PI * -0.5f));
 	pSphere->LoadTex(1);
 
@@ -87,6 +87,7 @@ HRESULT CTitle::Init()
 
 	// カメラの追従設定(目標 : プレイヤー)
 	CCamera *pCamera = CApplication::GetCamera();
+	pCamera->SetUseRoll(false, false);
 	pCamera->SetFollowTarget(pModel, 1.0);
 	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 50.0f, -9000.0f));
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));

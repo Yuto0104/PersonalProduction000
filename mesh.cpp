@@ -78,6 +78,11 @@ bool CMesh3D::CollisonMesh(CObject *pTarget)
 						{// 当たり判定を行う
 							bCollison = pMesh->Collison(pTarget);
 						}
+
+						if (bCollison)
+						{
+							break;
+						}
 					}
 				}
 
@@ -739,14 +744,16 @@ bool CMesh3D::Collison(CObject *pTarget)
 				// ターゲットの設定
 				pTarget->SetPos(posTarget);
 
+#ifdef _DEBUG
 				CDebugProc::Print("内にいるポリゴン : %d\n", nCntPolygon);
 				CDebugProc::Print("頂点%dの法線 | X : %.3f | Y : %.3f | Z : %.3f |\n", nCntPolygon, pVtx[pIdx[nCntPolygon]].nor.x, pVtx[pIdx[nCntPolygon]].nor.y, pVtx[pIdx[nCntPolygon]].nor.z);
 				CDebugProc::Print("頂点%dの法線 | X : %.3f | Y : %.3f | Z : %.3f |\n", nCntPolygon + 1, pVtx[pIdx[nCntPolygon + 1]].nor.x, pVtx[pIdx[nCntPolygon + 1]].nor.y, pVtx[pIdx[nCntPolygon + 1]].nor.z);
 				CDebugProc::Print("頂点%dの法線 | X : %.3f | Y : %.3f | Z : %.3f |\n", nCntPolygon + 2, pVtx[pIdx[nCntPolygon + 2]].nor.x, pVtx[pIdx[nCntPolygon + 2]].nor.y, pVtx[pIdx[nCntPolygon + 2]].nor.z);
 
-				pVtx[pIdx[nCntPolygon]].col = D3DXCOLOR(1.0f, 0.0f, 0.0f,1.0f);
+				pVtx[pIdx[nCntPolygon]].col = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 				pVtx[pIdx[nCntPolygon + 1]].col = D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f);
 				pVtx[pIdx[nCntPolygon + 2]].col = D3DXCOLOR(0.0f, 0.0f, 1.0f, 1.0f);
+#endif // DEBUG
 				break;
 			}
 		}

@@ -80,6 +80,8 @@ public:
 	static void ReleaseListAll();													// すべてのオブジェクトのリスト解除
 	static CSuper *GetTop(int nPriority) { return m_pTop[nPriority]; }				// 先頭オブジェクトへのポインタの取得
 	static CSuper *GetCurrent(int nPriority) { return m_pCurrent[nPriority]; }		// 現在の(一番後ろ)オブジェクトへのポインタの取得
+	static void SetPause(const bool bPause) { m_bPause = bPause; }					// ポーズ状態のセッター
+	static bool GetPause() { return m_bPause; }										// ポーズ状態のゲッター
 
 	//--------------------------------------------------------------------
 	// コンストラクタとデストラクタ
@@ -119,6 +121,7 @@ private:
 	static CSuper *m_pCurrent[MAX_LEVEL];		// 現在の(一番後ろ)オブジェクトへのポインタ
 	static int m_nMax;							// 使用数
 	static int m_nPriorityMax[MAX_LEVEL];		// プライオリティごとのオブジェクト数
+	static bool m_bPause;						// ポーズを使用しているかどうか
 
 	//--------------------------------------------------------------------
 	// メンバ変数

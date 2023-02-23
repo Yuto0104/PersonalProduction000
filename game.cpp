@@ -98,14 +98,14 @@ HRESULT CGame::Init()
 	pSphere->SetRot(D3DXVECTOR3(D3DX_PI, 0.0f, 0.0f));
 	pSphere->SetSize(D3DXVECTOR3(100.0f, 0, 100.0f));
 	pSphere->SetBlock(CMesh3D::DOUBLE_INT(100, 100));
-	pSphere->SetRadius(50000.0f);
+	pSphere->SetRadius(10000.0f);
 	pSphere->SetSphereRange(D3DXVECTOR2(D3DX_PI * 2.0f, D3DX_PI * -0.5f));
 	pSphere->LoadTex(1);
 
 	// プレイヤーの設定
 	m_pPlayer = CPlayer::Create();
 	m_pPlayer->SetMotion("data/MOTION/motion001.txt");
-	m_pPlayer->SetPos(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	m_pPlayer->SetPos(D3DXVECTOR3(724.0f, 0.0f, 2700.0f));
 
 	// スコア
 	m_pScore = CScore::Create(10, false);
@@ -123,7 +123,8 @@ HRESULT CGame::Init()
 	pCamera->SetFollowTarget(m_pPlayer, 1.0);
 	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 50.0f, -200.0f));
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
-	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
+	pCamera->SetRot(D3DXVECTOR3(0.0f, D3DX_PI, 0.0f));
+	pCamera->SetUseRoll(true, true);
 
 	// カメラの追従設定(目標 : プレイヤー)
 	pCamera = CApplication::GetMapCamera();
@@ -199,6 +200,11 @@ void CGame::Uninit()
 
 	// カメラの追従設定
 	CCamera *pCamera = CApplication::GetCamera();
+	pCamera->SetFollowTarget(false);
+	pCamera->SetTargetPosR(false);
+
+	// カメラの追従設定
+	pCamera = CApplication::GetMapCamera();
 	pCamera->SetFollowTarget(false);
 	pCamera->SetTargetPosR(false);
 

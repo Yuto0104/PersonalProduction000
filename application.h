@@ -33,6 +33,7 @@ class CSceneMode;
 class CFade;
 class CLight;
 class CSound;
+class CPause;
 
 //=============================================================================
 // アプリケーションクラス
@@ -66,8 +67,10 @@ public:
 	static CTexture *GetTexture() { return m_pTexture; }								// テクスチャのゲッター
 	static CCamera *GetCamera() { return m_pCamera; }									// カメラのゲッター
 	static CCamera *GetMapCamera() { return m_pMapCamera; }								// マップカメラのゲッター
+	static CFade *GetFade() { return m_pFade; }											// フェードのゲッター
 	static CLight *GetLight() { return m_pLight; }										// ライトの取得
 	static CSound *GetSound() { return m_pSound; }										// サウンドのゲッター
+	static CPause *GetPause() { return m_pPause; }										// ポーズの取得
 	static D3DXVECTOR3 ScreenCastWorld(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static D3DXVECTOR3 WorldCastScreen(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static float RotNormalization(float fRot);											// 角度の設定
@@ -110,6 +113,7 @@ private:
 	static CFade *m_pFade;						// フェードクラス
 	static CLight *m_pLight;					// ライトクラス
 	static CSound *m_pSound;					// サウンドクラス
+	static CPause *m_pPause;					// ポーズクラス
 	static int m_nPriority;						// プライオリティ番号
 	static int m_nScore;						// 現在のスコア
 	static bool m_bWireFrame;					// ワイヤーフレームを使うか

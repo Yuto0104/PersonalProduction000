@@ -55,11 +55,9 @@ public:
 		NEUTRAL_ACTION = 0,		// ニュートラル
 		MOVE_ACTION,			// 移動
 		ATTACK_ACTION,			// 攻撃
-
-		// ナイフ
-		KNIFE_NEUTRAL_ACTION,	// ニュートラル
-		KNIFE_MOVE_ACTION,		// 移動
-		KNIFE_ATTACK_ACTION,	// 攻撃
+		ATTACK_JUMP,			// ジャンプ
+		ATTACK_LANDING,			// 着地 
+		ATTACK_HANGING,			// ぶら下がり
 		MAX_ACTION,				// 最大数
 	};
 
@@ -82,7 +80,8 @@ public:
 	void Update() override;											// 更新
 	void Draw() override;											// 描画
 	void SetSpeed(const float fSpeed) { m_fSpeed = fSpeed; }		// 移動速度の設定
-	
+	void Dash();													// ダッシュ
+
 private:
 	//--------------------------------------------------------------------
 	// メンバ関数
@@ -92,6 +91,7 @@ private:
 	void Jump();			// ジャンプ
 	void Attack();			// 攻撃
 	void GetWeapon();		// 武器の取得
+	void Landing();			// 着地
 		
 	//--------------------------------------------------------------------
 	// メンバ変数

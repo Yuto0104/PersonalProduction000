@@ -66,13 +66,13 @@ HRESULT CResult::Init()
 	m_pTitleObj = CObject2D::Create();
 	m_pTitleObj->SetPos(D3DXVECTOR3(340.0f, 650.0f, 0.0f));
 	m_pTitleObj->SetSize(D3DXVECTOR3(300.0f, 100.0f, 0.0f));
-	m_pTitleObj->SetCol(D3DXCOLOR(0.3f, 0.1f, 1.0f, 1.0f));
-	m_pTitleObj->LoadTex(13);
+	m_pTitleObj->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pTitleObj->LoadTex(16);
 
 	m_pGameObj = CObject2D::Create();
 	m_pGameObj->SetPos(D3DXVECTOR3(940.0f, 650.0f, 0.0f));
 	m_pGameObj->SetSize(D3DXVECTOR3(320.0f, 100.0f, 0.0f));
-	m_pGameObj->SetCol(D3DXCOLOR(0.3f, 0.1f, 1.0f, 1.0f));
+	m_pGameObj->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pGameObj->LoadTex(15);
 
 	m_pScore = CScore::Create(10, false);
@@ -95,7 +95,7 @@ HRESULT CResult::Init()
 	pSphere->SetRot(D3DXVECTOR3(D3DX_PI, 0.0f, 0.0f));
 	pSphere->SetSize(D3DXVECTOR3(100.0f, 0, 100.0f));
 	pSphere->SetBlock(CMesh3D::DOUBLE_INT(100, 100));
-	pSphere->SetRadius(50000.0f);
+	pSphere->SetRadius(10000.0f);
 	pSphere->SetSphereRange(D3DXVECTOR2(D3DX_PI * 2.0f, D3DX_PI * -0.5f));
 	pSphere->LoadTex(1);
 
@@ -104,6 +104,7 @@ HRESULT CResult::Init()
 
 	// カメラの追従設定(目標 : プレイヤー)
 	CCamera *pCamera = CApplication::GetCamera();
+	pCamera->SetUseRoll(false, false);
 	pCamera->SetFollowTarget(pModel, 1.0);
 	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 50.0f, -9000.0f));
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
@@ -208,12 +209,12 @@ void CResult::FlashObj()
 	{
 	case CApplication::MODE_TITLE:
 		pObj = m_pTitleObj;
-		m_pGameObj->SetCol(D3DXCOLOR(0.3f, 0.1f, 1.0f, 1.0f));
+		m_pGameObj->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 		break;
 
 	case CApplication::MODE_GAME:
 		pObj = m_pGameObj;
-		m_pTitleObj->SetCol(D3DXCOLOR(0.3f, 0.1f, 1.0f, 1.0f));
+		m_pTitleObj->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 		break;
 
 	default:
@@ -221,7 +222,7 @@ void CResult::FlashObj()
 		break;
 	}
 
-	pObj->SetCol(D3DXCOLOR(0.25f, 0.1f, 0.8f, sinf(m_fAddAlpha) * 3.0f));
+	pObj->SetCol(D3DXCOLOR(0.7f, 0.7f, 0.7f, sinf(m_fAddAlpha) * 3.0f));
 }
 
 //=============================================================================

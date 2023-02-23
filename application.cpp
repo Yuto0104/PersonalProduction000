@@ -34,6 +34,7 @@
 #include "result.h"
 #include "fade.h"
 #include "collision.h"
+#include "pause.h"
 
 //*****************************************************************************
 // 静的メンバ変数宣言
@@ -52,6 +53,7 @@ CSceneMode *CApplication::pSceneMode = nullptr;						// シーンモードを格納
 CFade *CApplication::m_pFade = nullptr;								// フェードクラス
 CLight *CApplication::m_pLight = nullptr;							// ライトクラス
 CSound *CApplication::m_pSound = nullptr;							// サウンドクラス
+CPause *CApplication::m_pPause = nullptr;							// ポーズクラス
 int CApplication::m_nPriority = 0;									// プライオリティ番号
 int CApplication::m_nScore = 0;										// 現在のスコア
 bool CApplication::m_bWireFrame = false;							// ワイヤーフレームを使うか
@@ -339,6 +341,10 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	// フェードの設定
 	m_pFade = CFade::Create();
 
+	// ポーズの生成
+	m_pPause = CPause::Create();
+	m_pPause->SetPos(D3DXVECTOR3(640.0f, 360.0f, 0.0f));
+
 	return S_OK;
 }
 
@@ -449,8 +455,12 @@ void CApplication::Update()
 
 	m_pKeyboard->Update();
 	m_pMouse->Update();
-	m_pCamera->Update();
-	m_pMapCamera->Update();
+
+	if (!CSuper::GetPause())
+	{
+		m_pCamera->Update();
+		m_pMapCamera->Update();
+	}
 
 	m_pRenderer->Update();
 

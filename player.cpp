@@ -254,6 +254,15 @@ void CPlayer::Update()
 		m_pWire->SetWireMode(CWire::MODE_HANGING);
 		m_pWire->SetHanging();
 		m_pWire->SetRotVec(D3DXVECTOR3(-1.0f, 0.0f, 0.0f));
+
+		// モーション情報の取得
+		CMotion *pMotion = CMotionModel3D::GetMotion();
+
+		if (pMotion != nullptr)
+		{
+			m_EAction = ATTACK_HANGING;
+			pMotion->SetNumMotion(m_EAction);
+		}
 	}
 
 	if (pKeyboard->GetTrigger(DIK_LSHIFT)
@@ -320,53 +329,23 @@ void CPlayer::Update()
 		pos += m_pWire->GetMove()->GetMove();
 	}
 
+	// 位置の設定
+	SetPos(pos);
+
 	// 回転
 	Rotate();
 
 	if (pKeyboard->GetRelease(DIK_LSHIFT)
 		&& m_pWire->GetWireMode() == CWire::MODE_HANGING)
 	{
-		pSound->PlaySound(CSound::SOUND_LABEL_SE_JUMP001);
-		m_pWire->SetWireMode(CWire::MODE_STOP);
-		D3DXVECTOR3 vecMove = pos - GetPosOld();
-		D3DXVECTOR3 rotMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		D3DXVECTOR3 rot = GetRot();
-		rot.y = CCalculation::RotNormalization((rot.y - D3DX_PI));
-
-		float fLength = sqrtf((vecMove.x * vecMove.x) + (vecMove.y * vecMove.y) + (vecMove.z * vecMove.z));
-		rotMove.x = atan2f(sqrtf((vecMove.x * vecMove.x) + (vecMove.z * vecMove.z)), vecMove.y);
-
-		// 位置の設定
-		vecMove.z = sinf(rotMove.x) * cosf(rot.y) * fLength;
-		vecMove.x = sinf(rotMove.x) * sinf(rot.y) * fLength;
-		vecMove.y = cosf(rotMove.x) * fLength;
-
-		m_pMove->SetSpeed(100.0f);
-		m_pMove->Moving(vecMove);
-		m_pMove->SetSpeed(fSPEED);
+		Dash();
 	}
 
 	if (pMotion != nullptr
-		&& !pMotion->GetMotion())
+		&& !pMotion->GetMotion()
+		&& m_EAction != ATTACK_JUMP)
 	{// ニュートラルモーションの設定
-		if (m_pMyWeapon == nullptr)
-		{
-			m_EAction = NEUTRAL_ACTION;
-		}
-		else
-		{
-			switch (m_pMyWeapon->GetWeaponType())
-			{
-			case CWeaponObj::WEAPONTYPE_KNIFE:
-				m_EAction = KNIFE_NEUTRAL_ACTION;
-				break;
-
-			default:
-				assert(false);
-				break;
-			}
-		}
-
+		m_EAction = NEUTRAL_ACTION;
 		pMotion->SetNumMotion(m_EAction);
 	}
 
@@ -375,6 +354,12 @@ void CPlayer::Update()
 
 	// 位置の設定
 	SetPos(pos);
+
+	// メッシュの当たり判定
+	if (CMesh3D::CollisonMesh(this))
+	{
+		Landing();
+	}
 
 	// モデルとの当たり判定
 	m_pCollisionRectangle3D->Collision(CObject::OBJTYPE_NONE, true);
@@ -400,16 +385,7 @@ void CPlayer::Update()
 
 		if (state == CCollision_Rectangle3D::STATE_Y)
 		{
-			m_fGravity = 0.0f;
-
-			D3DXVECTOR3 move = m_pMove->GetMove();
-			move.y = 0.0f;
-			m_pMove->SetMove(move);
-
-			if (m_pWire->GetWireMode() == CWire::MODE_FIRING)
-			{
-				m_pWire->SetWireMode(CWire::MODE_STOP);
-			}
+			Landing();
 		}
 
 		if ((state == CCollision_Rectangle3D::STATE_X
@@ -501,8 +477,7 @@ void CPlayer::Update()
 		m_pAttack->SetPos(pos);
 	}
 
-	if (m_EAction == ATTACK_ACTION
-		|| m_EAction == KNIFE_ATTACK_ACTION)
+	if (m_EAction == ATTACK_ACTION)
 	{
 		bool bCollision = m_pColliAttack->Collision(CObject::OBJETYPE_ENEMY, false);
 
@@ -523,20 +498,28 @@ void CPlayer::Update()
 		}
 	}
 
-	// メッシュの当たり判定
-	if (CMesh3D::CollisonMesh(this))
+	// 位置の取得
+	pos = GetPos();
+	D3DXVECTOR3 size = m_pCollisionRectangle3D->GetSize();
+
+	if (pos.x - size.x / 2.0f < -5000.0f)
 	{
-		m_fGravity = 0.0f;
-
-		D3DXVECTOR3 move = m_pMove->GetMove();
-		move.y = 0.0f;
-		m_pMove->SetMove(move);
-
-		if (m_pWire->GetWireMode() == CWire::MODE_FIRING)
-		{
-			m_pWire->SetWireMode(CWire::MODE_STOP);
-		}
+		pos.x = -5000.0f + size.x / 2.0f;
 	}
+	if (pos.x + size.x / 2.0f > 5000.0f)
+	{
+		pos.x = 5000.0f - size.x / 2.0f;
+	}
+	if (pos.z - size.z / 2.0f < -5000.0f)
+	{
+		pos.z = -5000.0f + size.z / 2.0f;
+	}
+	if (pos.z + size.z / 2.0f > 5000.0f)
+	{
+		pos.z = 5000.0f - size.z / 2.0f;
+	}
+
+	SetPos(pos);
 	
 	// 位置の取得
 	pos = GetPos();
@@ -556,6 +539,48 @@ void CPlayer::Draw()
 {
 	// 描画
 	CMotionModel3D::Draw();
+}
+
+//=============================================================================
+// ダッシュ
+// Author : 唐﨑結斗
+// 概要 : ダッシュ
+//=============================================================================
+void CPlayer::Dash()
+{
+	// サウンド情報の取得
+	CSound *pSound = CApplication::GetSound();
+
+	// モーション情報の取得
+	CMotion *pMotion = CMotionModel3D::GetMotion();
+
+	// 位置の取得
+	D3DXVECTOR3 pos = GetPos();
+
+	pSound->PlaySound(CSound::SOUND_LABEL_SE_JUMP001);
+	m_pWire->SetWireMode(CWire::MODE_STOP);
+	D3DXVECTOR3 vecMove = pos - GetPosOld();
+	D3DXVECTOR3 rotMove = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 rot = GetRot();
+	rot.y = CCalculation::RotNormalization((rot.y - D3DX_PI));
+
+	float fLength = sqrtf((vecMove.x * vecMove.x) + (vecMove.y * vecMove.y) + (vecMove.z * vecMove.z));
+	rotMove.x = atan2f(sqrtf((vecMove.x * vecMove.x) + (vecMove.z * vecMove.z)), vecMove.y);
+
+	// 位置の設定
+	vecMove.z = sinf(rotMove.x) * cosf(rot.y) * fLength;
+	vecMove.x = sinf(rotMove.x) * sinf(rot.y) * fLength;
+	vecMove.y = cosf(rotMove.x) * fLength;
+
+	m_pMove->SetSpeed(100.0f);
+	m_pMove->Moving(vecMove);
+	m_pMove->SetSpeed(fSPEED);
+
+	if (pMotion != nullptr)
+	{
+		m_EAction = ATTACK_JUMP;
+		pMotion->SetNumMotion(m_EAction);
+	}
 }
 
 //=============================================================================
@@ -642,27 +667,10 @@ D3DXVECTOR3 CPlayer::Move()
 		// 移動方向の正規化
 		m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y);
 
-		if (m_EAction == NEUTRAL_ACTION
-			|| m_EAction == KNIFE_NEUTRAL_ACTION)
+		if (m_EAction == NEUTRAL_ACTION)
 		{// 移動
-			if (m_pMyWeapon == nullptr)
-			{
-				m_EAction = MOVE_ACTION;
-			}
-			else
-			{
-				switch (m_pMyWeapon->GetWeaponType())
-				{
-				case CWeaponObj::WEAPONTYPE_KNIFE:
-					m_EAction = KNIFE_MOVE_ACTION;
-					break;
-
-				default:
-					assert(false);
-					break;
-				}
-			}
-
+			m_EAction = MOVE_ACTION;
+		
 			if (pMotion != nullptr)
 			{
 				pMotion->SetNumMotion(m_EAction);
@@ -678,27 +686,9 @@ D3DXVECTOR3 CPlayer::Move()
 
 	if (sqrtf((moveing.x * moveing.x) + (moveing.z * moveing.z)) <= 0.0f
 		&& pMotion != nullptr
-		&& (m_EAction == MOVE_ACTION
-		|| m_EAction == KNIFE_MOVE_ACTION))
+		&& m_EAction == MOVE_ACTION)
 	{
-		if (m_pMyWeapon == nullptr)
-		{
-			m_EAction = NEUTRAL_ACTION;
-		}
-		else
-		{
-			switch (m_pMyWeapon->GetWeaponType())
-			{
-			case CWeaponObj::WEAPONTYPE_KNIFE:
-				m_EAction = KNIFE_NEUTRAL_ACTION;
-				break;
-
-			default:
-				assert(false);
-				break;
-			}
-		}
-
+		m_EAction = NEUTRAL_ACTION;
 		pMotion->SetNumMotion(m_EAction);
 	}
 
@@ -762,6 +752,15 @@ void CPlayer::Jump()
 	m_pMove->SetSpeed(fJAMP);
 	m_pMove->Moving(D3DXVECTOR3(0.0f, 1.0f, 0.0f));
 	m_pMove->SetSpeed(fSPEED);
+
+	// モーション情報の取得
+	CMotion *pMotion = CMotionModel3D::GetMotion();
+
+	if (pMotion != nullptr)
+	{
+		m_EAction = ATTACK_JUMP;
+		pMotion->SetNumMotion(m_EAction);
+	}
 }
 
 //=============================================================================
@@ -776,24 +775,7 @@ void CPlayer::Attack()
 
 	if (pMotion != nullptr)
 	{
-		if (m_pMyWeapon == nullptr)
-		{
-			m_EAction = ATTACK_ACTION;
-		}
-		else
-		{
-			switch (m_pMyWeapon->GetWeaponType())
-			{
-			case CWeaponObj::WEAPONTYPE_KNIFE:
-				m_EAction = KNIFE_ATTACK_ACTION;
-				break;
-
-			default:
-				assert(false);
-				break;
-			}
-		}
-
+		m_EAction = ATTACK_ACTION;
 		pMotion->SetNumMotion(m_EAction);
 	}
 }
@@ -828,20 +810,36 @@ void CPlayer::GetWeapon()
 	pWeaponCollision = m_pMyWeapon->GetCollision();
 	pWeaponCollision->SetUseFlag(false);
 
-	if (m_EAction == NEUTRAL_ACTION
-		|| m_EAction == KNIFE_NEUTRAL_ACTION)
+	if (m_EAction == NEUTRAL_ACTION)
 	{
-		switch (m_pMyWeapon->GetWeaponType())
-		{
-		case CWeaponObj::WEAPONTYPE_KNIFE:
-			m_EAction = KNIFE_NEUTRAL_ACTION;
-			break;
+		pMotion->SetNumMotion(m_EAction);
+	}
+}
 
-		default:
-			assert(false);
-			break;
-		}
+//=============================================================================
+// 着地
+// Author : 唐﨑結斗
+// 概要 : 着地モーションをはじめ、重力を0にする
+//=============================================================================
+void CPlayer::Landing()
+{
+	// モーション情報の取得
+	CMotion *pMotion = CMotionModel3D::GetMotion();
 
+	m_fGravity = 0.0f;
+
+	D3DXVECTOR3 move = m_pMove->GetMove();
+	move.y = 0.0f;
+	m_pMove->SetMove(move);
+
+	if (m_pWire->GetWireMode() == CWire::MODE_FIRING)
+	{
+		m_pWire->SetWireMode(CWire::MODE_STOP);
+	}
+
+	if (m_EAction == ATTACK_JUMP)
+	{
+		m_EAction = ATTACK_LANDING;
 		pMotion->SetNumMotion(m_EAction);
 	}
 }

@@ -252,7 +252,7 @@ void CMotion::PlayMotion()
 
 	if (motion.nCntFrame >= motion.pKeySet[motion.nCntKeySet].nFrame)
 	{// フレームカウントが指定のフレーム数を超えた場合
-	 // フレーム数の初期化
+		// フレーム数の初期化
 		motion.nCntFrame = 0;
 
 		// 再生中のキー番号数の加算
@@ -339,6 +339,11 @@ void CMotion::MotionBlend()
 
 		motion.nCntFrame = 0;	// フレーム数の初期化
 		motion.nCntKeySet++;	// 再生中のキー番号数の加算
+
+		if (motion.nCntKeySet >= motion.nNumKey)
+		{
+			motion.nCntKeySet = 0;
+		}
 
 		m_bMotionBlend = false;
 	}

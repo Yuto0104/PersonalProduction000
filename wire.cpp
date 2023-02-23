@@ -25,6 +25,8 @@
 #include "game.h"
 #include "player.h"
 #include "model3D.h"
+#include "player.h"
+#include "game.h"
 
 //--------------------------------------------------------------------
 // ’è”’è‹`
@@ -457,6 +459,8 @@ void CWire::Hanging()
 	if ((m_rot.x >= D3DX_PI * fLimit  && m_rot.x >= D3DX_PI * 0.0f))
 	{
 		m_EMode = MODE_STOP;
+		CPlayer *pPlayer = CGame::GetPlayer();
+		pPlayer->Dash();
 	}
 }
 

@@ -30,6 +30,7 @@ public:
 	{
 		OBJTYPE_NONE = 0,			// タイプ無し
 		OBJTYPE_FADE,				// フェード
+		OBJTYPE_PAUSE,				// ポーズ
 		OBJETYPE_PLAYER,			// プレイヤー
 		OBJETYPE_ENEMY,				// エネミー
 		OBJTYPE_3DMODEL,			// 3Dモデル

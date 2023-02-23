@@ -16,6 +16,7 @@
 #include "renderer.h"
 #include "application.h"
 #include "camera.h"
+#include "object.h"
 
 //*****************************************************************************
 // Ã“Iƒƒ“ƒo•Ï”éŒ¾
@@ -24,6 +25,7 @@ CSuper *CSuper::m_pTop[MAX_LEVEL] = { nullptr };		// æ“ªƒIƒuƒWƒFƒNƒg‚Ö‚Ìƒ|ƒCƒ“ƒ
 CSuper *CSuper::m_pCurrent[MAX_LEVEL] = { nullptr };	// Œ»İ‚Ì(ˆê”ÔŒã‚ë)ƒIƒuƒWƒFƒNƒg‚Ö‚Ìƒ|ƒCƒ“ƒ^
 int CSuper::m_nMax = 0;									// g—p”
 int CSuper::m_nPriorityMax[MAX_LEVEL] = { 0 };			// ƒvƒ‰ƒCƒIƒŠƒeƒB‚²‚Æ‚ÌƒIƒuƒWƒFƒNƒg”
+bool CSuper::m_bPause = false;							// ƒ|[ƒY‚ğg—p‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©
 
 //=============================================================================
 // ƒCƒ“ƒXƒ^ƒ“ƒX‚Ì‰ğ•ú
@@ -92,7 +94,24 @@ void CSuper::UpdateAll(void)
 
 				if (!pSuper->m_bDeath)
 				{// ƒIƒuƒWƒFƒNƒg‚ÌXV
-					pSuper->Update();
+					if (pSuper->GetElement() != ELEMENT_OBJECT)
+					{
+						pSuper->Update();
+					}
+					if (pSuper->GetElement() == ELEMENT_OBJECT)
+					{
+						CObject *pObject = (CObject*)pSuper;
+					
+						if (!m_bPause)
+						{
+							pSuper->Update();
+						}
+						else if (m_bPause
+							&& pObject->GetObjType() == CObject::OBJTYPE_PAUSE)
+						{
+							pSuper->Update();
+						}
+					}
 				}
 				
 				// Œ»İ‚ÌƒIƒuƒWƒFƒNƒg‚ÌŸ‚ÌƒIƒuƒWƒFƒNƒg‚ğXV

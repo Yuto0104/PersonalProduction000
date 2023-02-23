@@ -34,6 +34,8 @@
 #include "score.h"
 #include "score_item.h"
 #include "sound.h"
+#include "scene_mode.h"
+#include "tutorial.h"
 
 //--------------------------------------------------------------------
 // 静的メンバ変数の定義
@@ -367,14 +369,31 @@ void CPlayer::Update()
 
 	if (m_pCollisionRectangle3D->Collision(CObject::OBJETYPE_SCOREITEM, false))
 	{
+		CApplication::SCENE_MODE mode = CApplication::GetMode();
+
 		// アイテムの取得
 		CScoreItem *pItem = (CScoreItem*)m_pCollisionRectangle3D->GetCollidedObj();
+		bool bUse = pItem->GetUse();
 
-		if (pItem->GetUse())
-		{// スコアの取得
-			CScore *pScore = CGame::GetScore();
-			pScore->AddScore(pItem->Acquisition(600));
-			pSound->PlaySound(CSound::SOUND_LABEL_SE_COIN000);
+		if (mode == CApplication::MODE_GAME)
+		{
+			if (bUse)
+			{// スコアの取得
+				CScore *pScore = CGame::GetScore();
+				pScore->AddScore(pItem->Acquisition(1800));
+				pSound->PlaySound(CSound::SOUND_LABEL_SE_COIN000);
+			}
+		}
+		if (mode == CApplication::MODE_TUTORIAL)
+		{
+			if (bUse)
+			{
+				CTutorial *pTutorial = (CTutorial*)CApplication::GetSceneMode();
+				pTutorial->SetTutoItem(true);
+				pItem->Acquisition(1800);
+				pSound->PlaySound(CSound::SOUND_LABEL_SE_COIN000);
+
+			}
 		}
 	}
 

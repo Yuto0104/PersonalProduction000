@@ -60,7 +60,7 @@ HRESULT CSound::Init(HWND hWnd)
 	m_aParam[SOUND_LABEL_BGM000] = SetSoundParam("data/BGM/title002.wav", -1);
 	m_aParam[SOUND_LABEL_BGM001] = SetSoundParam("data/BGM/game002.wav", -1);
 	m_aParam[SOUND_LABEL_BGM002] = SetSoundParam("data/BGM/result002.wav", -1);
-	m_aParam[SOUND_LABEL_BGM003] = SetSoundParam("data/BGM/tutorial000.wav", -1);
+	m_aParam[SOUND_LABEL_BGM003] = SetSoundParam("data/BGM/bgm004.wav", -1);
 	m_aParam[SOUND_LABEL_SE_DECIDE] = SetSoundParam("data/SE/decide000.wav", 0);
 	m_aParam[SOUND_LABEL_SE_SELECT] = SetSoundParam("data/SE/select000.wav", 0);
 	m_aParam[SOUND_LABEL_SE_PAUSE] = SetSoundParam("data/SE/pause000.wav", 0);

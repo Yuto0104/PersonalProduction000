@@ -1,8 +1,8 @@
 //=============================================================================
 //
-// ゲームクラス(game.cpp)
+// チュートリアルクラス(tutorial.cpp)
 // Author : 唐﨑結斗
-// 概要 : ゲームクラスの管理を行う
+// 概要 : チュートリアルクラスの管理を行う
 //
 //=============================================================================
 
@@ -11,7 +11,7 @@
 //*****************************************************************************
 #include <assert.h>
 
-#include "game.h"
+#include "tutorial.h"
 #include "calculation.h"
 #include "keyboard.h"
 #include "mouse.h"
@@ -36,25 +36,25 @@
 #include "score.h"
 #include "time.h"
 #include "sound.h"
+#include "object2D.h"
 
 //*****************************************************************************
 // 静的メンバ変数宣言
 //*****************************************************************************
-CPlayer *CGame::m_pPlayer = nullptr;					// プレイヤークラス
-CScore *CGame::m_pScore = nullptr;						// スコアインスタンス
-CTime *CGame::m_pTime = nullptr;						// タイム
-D3DXCOLOR CGame::fogColor;								// フォグカラー
-float CGame::fFogStartPos;								// フォグの開始点
-float CGame::fFogEndPos;								// フォグの終了点
-float CGame::fFogDensity;								// フォグの密度
-bool CGame::m_bGame = false;							// ゲームの状況
+CPlayer *CTutorial::m_pPlayer = nullptr;					// プレイヤークラス
+CScore *CTutorial::m_pScore = nullptr;						// スコアインスタンス
+D3DXCOLOR CTutorial::fogColor;								// フォグカラー
+float CTutorial::fFogStartPos;								// フォグの開始点
+float CTutorial::fFogEndPos;								// フォグの終了点
+float CTutorial::fFogDensity;								// フォグの密度
 
 //=============================================================================
 // コンストラクタ
 // Author : 唐﨑結斗
 // 概要 : インスタンス生成時に行う処理
 //=============================================================================
-CGame::CGame()
+CTutorial::CTutorial() : m_pTutorial(nullptr),
+m_nCntFrame(0)
 {
 
 }
@@ -64,7 +64,7 @@ CGame::CGame()
 // Author : 唐﨑結斗
 // 概要 : インスタンス終了時に行う処理
 //=============================================================================
-CGame::~CGame()
+CTutorial::~CTutorial()
 {
 
 }
@@ -74,7 +74,7 @@ CGame::~CGame()
 // Author : 唐﨑結斗
 // 概要 : 頂点バッファを生成し、メンバ変数の初期値を設定
 //=============================================================================
-HRESULT CGame::Init()
+HRESULT CTutorial::Init()
 {// マウスの取得
 	CMouse *pMouse = CApplication::GetMouse();
 
@@ -111,12 +111,6 @@ HRESULT CGame::Init()
 	m_pScore->SetScore(0);
 	m_pScore->SetPos(D3DXVECTOR3(1280.0f, m_pScore->GetSize().y / 2.0f, 0.0f));
 
-	// タイム
-	m_pTime = CTime::Create(3);
-	m_pTime->SetTime(120);
-	m_pTime->SetTimeAdd(false);
-	m_pTime->SetPos(D3DXVECTOR3(640.0f, m_pTime->GetSize().y / 2.0f, 0.0f));
-
 	// カメラの追従設定(目標 : プレイヤー)
 	CCamera *pCamera = CApplication::GetCamera();
 	pCamera->SetFollowTarget(m_pPlayer, 1.0);
@@ -124,26 +118,6 @@ HRESULT CGame::Init()
 	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
 	pCamera->SetRot(D3DXVECTOR3(0.0f, D3DX_PI, 0.0f));
 	pCamera->SetUseRoll(true, true);
-
-	// カメラの追従設定(目標 : プレイヤー)
-	pCamera = CApplication::GetMapCamera();
-	pCamera->SetFollowTarget(m_pPlayer, 1.0);
-	pCamera->SetPosVOffset(D3DXVECTOR3(0.0f, 5000.0f, -1.0f));
-	pCamera->SetPosROffset(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
-	pCamera->SetRot(D3DXVECTOR3(0.0f, 0.0f, 0.0f));
-	pCamera->SetViewSize(0, 0, 250, 250);
-	pCamera->SetUseRoll(false, true);
-	pCamera->SetAspect(D3DXVECTOR2(10000.0f, 10000.0f));
-
-	//// 武器のの設置
-	//CWeaponObj *pWeapon = CWeaponObj::Create();
-	//pWeapon->SetPos(D3DXVECTOR3(0.0f, 0.0f, 100.0f));
-	//pWeapon->SetType(11);
-	//pWeapon->SetWeaponType(CWeaponObj::WEAPONTYPE_KNIFE);
-	//pWeapon->SetAttack(5);
-	//CCollision_Rectangle3D *pCollision = pWeapon->GetCollision();
-	//pCollision->SetSize(D3DXVECTOR3(10.0f, 36.0f, 10.0f));
-	//pCollision->SetPos(D3DXVECTOR3(0.0f, 18.0f, 0.0f));
 
 	// マウスカーソルを消す
 	pMouse->SetShowCursor(false);
@@ -168,7 +142,19 @@ HRESULT CGame::Init()
 	// フォグの密度の設定
 	pDevice->SetRenderState(D3DRS_FOGDENSITY, *(DWORD*)(&fFogDensity));
 
-	m_bGame = true;
+	m_pTutorial = CObject2D::Create();
+	m_pTutorial->SetPos(D3DXVECTOR3(1050.0f, 320.0f, 0.0f));
+	m_pTutorial->SetSize(D3DXVECTOR3(500.0f, 500.0f, 0.0f));
+	m_pTutorial->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pTutorial->LoadTex(22);
+
+	m_pTutorialEnd = CObject2D::Create();
+	m_pTutorialEnd->SetPos(D3DXVECTOR3(1050.0f, 600.0f, 0.0f));
+	m_pTutorialEnd->SetSize(D3DXVECTOR3(500.0f, 50.0f, 0.0f));
+	m_pTutorialEnd->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pTutorialEnd->LoadTex(24);
+
+	m_bTutoItem = false;
 
 	return S_OK;
 }
@@ -178,7 +164,7 @@ HRESULT CGame::Init()
 // Author : 唐﨑結斗
 // 概要 : テクスチャのポインタと頂点バッファの解放
 //=============================================================================
-void CGame::Uninit()
+void CTutorial::Uninit()
 {// マウスの取得
 	CMouse *pMouse = CApplication::GetMouse();
 
@@ -222,7 +208,7 @@ void CGame::Uninit()
 // Author : 唐﨑結斗
 // 概要 : 更新を行う
 //=============================================================================
-void CGame::Update()
+void CTutorial::Update()
 {
 	// カメラの追従設定
 	CCamera *pCamera = nullptr;
@@ -245,32 +231,29 @@ void CGame::Update()
 		pCamera->Zoom();
 	}
 
-	if (pKeyboard->GetTrigger(DIK_F3))
-	{
-		m_pTime->SetTime(0);
-	}
-
 #endif // _DEBUG
 
-
-	if (m_pTime->GetTimeEnd()
-		&& m_bGame)
+	if (m_bTutoItem)
 	{
-		m_bGame = false;
+		m_nCntFrame--;
+		m_pTutorial->SetSize(D3DXVECTOR3(500.0f, 300.0f, 0.0f));
+		m_pTutorial->LoadTex(23);
 
-		// カメラの追従設定
-		pCamera = CApplication::GetCamera();
-		pCamera->SetFollowTarget(false);
-		pCamera = CApplication::GetMapCamera();
-		pCamera->SetFollowTarget(false);
-
-		// スコアの設定
-		CApplication::SetScore(m_pScore->GetScore());
+		if (m_nCntFrame <= 0)
+		{
+			m_nCntFrame = 0;
+			m_bTutoItem = false;
+		}
+	}
+	else
+	{
+		m_pTutorial->SetSize(D3DXVECTOR3(500.0f, 500.0f, 0.0f));
+		m_pTutorial->LoadTex(22);
 	}
 
-	if (!m_bGame)
+	if (pKeyboard->GetTrigger(DIK_F3))
 	{
-		CApplication::SetNextMode(CApplication::MODE_RESULT);
+		CApplication::SetNextMode(CApplication::MODE_TITLE);
 	}
 }
 
@@ -279,7 +262,18 @@ void CGame::Update()
 // Author : 唐﨑結斗
 // 概要 : 描画を行う
 //=============================================================================
-void CGame::Draw()
+void CTutorial::Draw()
 {
 
+}
+
+//=============================================================================
+// アイテムのチュートリアル
+// Author : 唐﨑結斗
+// 概要 : アイテムのチュートリアルを使用する
+//=============================================================================
+void CTutorial::SetTutoItem(bool bTutoItem)
+{
+	m_bTutoItem = bTutoItem;
+	m_nCntFrame = 300;
 }

@@ -200,6 +200,7 @@
     <ClInclude Include="tex_anim.h" />
     <ClInclude Include="time.h" />
     <ClInclude Include="title.h" />
+    <ClInclude Include="tutorial.h" />
     <ClInclude Include="wave_mesh.h" />
     <ClInclude Include="weapon_obj.h" />
     <ClInclude Include="wire.h" />
@@ -254,6 +255,7 @@
     <ClCompile Include="tex_anim.cpp" />
     <ClCompile Include="time.cpp" />
     <ClCompile Include="title.cpp" />
+    <ClCompile Include="tutorial.cpp" />
     <ClCompile Include="wave_mesh.cpp" />
     <ClCompile Include="weapon_obj.cpp" />
     <ClCompile Include="wire.cpp" />

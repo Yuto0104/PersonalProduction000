@@ -27,8 +27,11 @@
 // Author : 唐﨑結斗
 // 概要 : インスタンス生成時に行う処理
 //=============================================================================
-CTitle::CTitle() : m_pTitleLogo(nullptr),	// タイトルロゴオブジェクト
-m_pPressEnter(nullptr),						// プレスエンターオブジェクト
+CTitle::CTitle() : m_nextMode(MODE_GAME),	// 次に設定するモード
+m_pTitleLogo(nullptr),						// タイトルロゴオブジェクト
+m_pNewGame(nullptr),						// ニューゲームオブジェクト
+m_pTutorial(nullptr),						// チュートリアルオブジェクト
+m_pExit(nullptr),							// 終了オブジェクト
 m_fAddAlpha(0.0f),							// フレーム数のカウント
 m_nCntFrame(0),								// フレームカウント
 m_bPressEnter(true)							// エンターキーを押せるか
@@ -79,11 +82,23 @@ HRESULT CTitle::Init()
 	m_pTitleLogo->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pTitleLogo->LoadTex(13);
 
-	m_pPressEnter = CObject2D::Create();
-	m_pPressEnter->SetPos(D3DXVECTOR3(640.0f, 500.0f, 0.0f));
-	m_pPressEnter->SetSize(D3DXVECTOR3(400.0f, 120.0f, 0.0f));
-	m_pPressEnter->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-	m_pPressEnter->LoadTex(14);
+	m_pNewGame = CObject2D::Create();
+	m_pNewGame->SetPos(D3DXVECTOR3(640.0f, 550.0f, 0.0f));
+	m_pNewGame->SetSize(D3DXVECTOR3(300.0f, 60.0f, 0.0f));
+	m_pNewGame->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pNewGame->LoadTex(15);
+
+	m_pTutorial = CObject2D::Create();
+	m_pTutorial->SetPos(D3DXVECTOR3(640.0f, 610.0f, 0.0f));
+	m_pTutorial->SetSize(D3DXVECTOR3(280.0f, 50.0f, 0.0f));
+	m_pTutorial->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pTutorial->LoadTex(20);
+
+	m_pExit = CObject2D::Create();
+	m_pExit->SetPos(D3DXVECTOR3(640.0f, 670.0f, 0.0f));
+	m_pExit->SetSize(D3DXVECTOR3(170.0f, 50.0f, 0.0f));
+	m_pExit->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+	m_pExit->LoadTex(21);
 
 	// カメラの追従設定(目標 : プレイヤー)
 	CCamera *pCamera = CApplication::GetCamera();
@@ -125,18 +140,23 @@ void CTitle::Uninit()
 //=============================================================================
 void CTitle::Update()
 {
-	// 入力情報の取得
-	CKeyboard *pKeyboard = CApplication::GetKeyboard();
-
 	// サウンド情報の取得
 	CSound *pSound = CApplication::GetSound();
 
-	FlashObj();
+	// 入力情報の取得
+	CKeyboard *pKeyboard = CApplication::GetKeyboard();
 
 	CCamera *pCamera = CApplication::GetCamera();
 	D3DXVECTOR3 rot = pCamera->GetRot();
 	rot.y += D3DX_PI / 180.0f * 0.1f;
 	pCamera->SetRot(rot);
+
+	if (m_bPressEnter)
+	{
+		SelectMode();
+	}
+
+	FlashObj();
 
 	if (m_bPressEnter
 		&& pKeyboard->GetTrigger(DIK_RETURN))
@@ -148,7 +168,25 @@ void CTitle::Update()
 	if (!m_bPressEnter
 		&& m_nCntFrame >= 40)
 	{
-		CApplication::SetNextMode(CApplication::MODE_GAME);
+		switch (m_nextMode)
+		{
+		case MODE_GAME:
+			CApplication::SetNextMode(CApplication::MODE_GAME);
+			break;
+
+		case MODE_TUTORIAL:
+			CApplication::SetNextMode(CApplication::MODE_TUTORIAL);
+			break;
+
+		case MODE_EXIT:
+			// ウィンドウを破棄
+			DestroyWindow(CApplication::GetWnd());
+			break;
+
+		default:
+			assert(false);
+			break;
+		}
 	}
 }
 
@@ -169,6 +207,8 @@ void CTitle::Draw()
 //=============================================================================
 void CTitle::FlashObj()
 {
+	CObject2D *pObj = nullptr;
+
 	if (m_bPressEnter)
 	{
 		m_fAddAlpha += 0.07f;
@@ -179,5 +219,69 @@ void CTitle::FlashObj()
 		m_nCntFrame++;
 	}
 
-	m_pPressEnter->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, sinf(m_fAddAlpha) * 3.0f));
+	switch (m_nextMode)
+	{
+	case MODE_GAME:
+		pObj = m_pNewGame;
+		m_pTutorial->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pExit->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		break;
+
+	case MODE_TUTORIAL:
+		pObj = m_pTutorial;
+		m_pNewGame->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pExit->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		break;
+
+	case MODE_EXIT:
+		pObj = m_pExit;
+		m_pTutorial->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pNewGame->SetCol(D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	pObj->SetCol(D3DXCOLOR(0.7f, 0.7f, 0.7f, sinf(m_fAddAlpha) * 3.0f));
+}
+
+//=============================================================================
+// モードの選択
+// Author : 唐﨑結斗
+// 概要 : モードの選択する
+//=============================================================================
+void CTitle::SelectMode()
+{
+	int nMode = (int)m_nextMode;
+
+	// サウンド情報の取得
+	CSound *pSound = CApplication::GetSound();
+
+	// 入力情報の取得
+	CKeyboard *pKeyboard = CApplication::GetKeyboard();
+
+	if (pKeyboard->GetTrigger(DIK_W))
+	{
+		pSound->PlaySound(CSound::SOUND_LABEL_SE_SELECT);
+		nMode--;
+
+		if (nMode < 0)
+		{
+			nMode = 2;
+		}
+	}
+	else if (pKeyboard->GetTrigger(DIK_S))
+	{
+		pSound->PlaySound(CSound::SOUND_LABEL_SE_SELECT);
+		nMode++;
+
+		if (nMode > 2)
+		{
+			nMode = 0;
+		}
+	}
+
+	m_nextMode = (NEXT_MODE)nMode;
 }

@@ -27,6 +27,7 @@
 #include "model3D.h"
 #include "player.h"
 #include "game.h"
+#include "tutorial.h"
 
 //--------------------------------------------------------------------
 // 定数定義
@@ -439,13 +440,25 @@ void CWire::Hanging()
 	//角加速度
 	m_fAccele = (-1 * 0.6f / m_fLength) * sinf(m_rot.x);
 
+	CApplication::SCENE_MODE mode = CApplication::GetMode();
+	CPlayer *pPlayer = nullptr;
+
+	if (mode == CApplication::MODE_GAME)
+	{
+		pPlayer = CGame::GetPlayer();
+	}
+	else if (mode == CApplication::MODE_TUTORIAL)
+	{
+		pPlayer = CTutorial::GetPlayer();
+	}
+
 	// 角度の加算
 	m_fAddRot += m_fAccele;
 	m_fAddRot *= 0.9995f;
 	m_rot.x += m_fAddRot;
 	//m_rot.y += m_fAddRot;
 	m_rot.x = CCalculation::RotNormalization(m_rot.x);
-	m_rot.y = CGame::GetPlayer()->GetRot().y;
+	m_rot.y = pPlayer->GetRot().y;
 
 	// 位置の設定
 	pos.z = posGoal.z - sinf(m_rot.x) * cosf(m_rot.y) * m_fLength;
@@ -459,7 +472,6 @@ void CWire::Hanging()
 	if ((m_rot.x >= D3DX_PI * fLimit  && m_rot.x >= D3DX_PI * 0.0f))
 	{
 		m_EMode = MODE_STOP;
-		CPlayer *pPlayer = CGame::GetPlayer();
 		pPlayer->Dash();
 	}
 }
@@ -500,11 +512,24 @@ void CWire::SetHanging()
 	//// 移動方向の設定
 	//m_rotVec = D3DXVECTOR3(sinf(m_rot.y), 0.0f, cosf(m_rot.y));
 
+	CApplication::SCENE_MODE mode = CApplication::GetMode();
+
+	float fRot = 0.0f;
+
+	if (mode == CApplication::MODE_GAME)
+	{
+		fRot = CGame::GetPlayer()->GetRot().y;
+	}
+	else if (mode == CApplication::MODE_TUTORIAL)
+	{
+		fRot = CTutorial::GetPlayer()->GetRot().y;
+	}
+
 	// 方向ベクトル
 	D3DXVECTOR3 vec = GetGoal()->GetPos() - GetStart()->GetPos();
 
 	m_rot.x = -atan2f(sqrtf((vec.x * vec.x) + (vec.z * vec.z)), vec.y);
-	m_rot.y = CGame::GetPlayer()->GetRot().y;
+	m_rot.y = fRot;
 	m_rot.x = CCalculation::RotNormalization(m_rot.x);
 	m_rot.y = CCalculation::RotNormalization(m_rot.y);
 

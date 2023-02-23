@@ -53,6 +53,7 @@ public:
 		MODE_TITLE = 0,			// タイトル
 		MODE_GAME,				// ゲーム
 		MODE_RESULT,			// リザルト
+		MODE_TUTORIAL,			// チュートリアル
 		MAX_MODE,				// シーンの最大数
 		MODE_NONE,				// シーン無し
 	};
@@ -71,6 +72,7 @@ public:
 	static CLight *GetLight() { return m_pLight; }										// ライトの取得
 	static CSound *GetSound() { return m_pSound; }										// サウンドのゲッター
 	static CPause *GetPause() { return m_pPause; }										// ポーズの取得
+	static CSceneMode *GetSceneMode() { return pSceneMode; }
 	static D3DXVECTOR3 ScreenCastWorld(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static D3DXVECTOR3 WorldCastScreen(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static float RotNormalization(float fRot);											// 角度の設定

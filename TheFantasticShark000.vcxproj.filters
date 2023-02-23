@@ -243,6 +243,9 @@
     <ClInclude Include="pause.h">
       <Filter>ヘッダー ファイル\System</Filter>
     </ClInclude>
+    <ClInclude Include="tutorial.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application.cpp">
@@ -400,6 +403,9 @@
     </ClCompile>
     <ClCompile Include="pause.cpp">
       <Filter>ソース ファイル\System</Filter>
+    </ClCompile>
+    <ClCompile Include="tutorial.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

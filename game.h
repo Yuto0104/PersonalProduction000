@@ -36,7 +36,6 @@ public:
 	static CScore *GetScore() { return m_pScore; }					// スコア
 	static CTime *GetTime() { return m_pTime; }						// タイム
 	static void SetGame(const bool bGame) { m_bGame = bGame; }		// ゲームの状況の設定
-	static CMesh3D *GetMesh() { return m_pMesh3D; }					// メッシュのゲッター
 
 	//--------------------------------------------------------------------
 	// コンストラクタとデストラクタ
@@ -48,7 +47,6 @@ public:
 	// 静的メンバ変数
 	//--------------------------------------------------------------------
 	static CPlayer *m_pPlayer;						// プレイヤークラス
-	static CMesh3D *m_pMesh3D;						// メッシュクラス
 	static CScore *m_pScore;						// スコア
 	static CTime *m_pTime;							// タイム
 	static D3DXCOLOR fogColor;						// フォグカラー

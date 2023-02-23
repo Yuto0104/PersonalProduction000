@@ -35,6 +35,7 @@
 #include "fade.h"
 #include "collision.h"
 #include "pause.h"
+#include "tutorial.h"
 
 //*****************************************************************************
 // Ã“Iƒƒ“ƒo•Ï”éŒ¾
@@ -215,6 +216,10 @@ void CApplication::SetMode(SCENE_MODE mode)
 
 	case CApplication::MODE_RESULT:
 		pSceneMode = new CResult;
+		break;
+
+	case CApplication::MODE_TUTORIAL:
+		pSceneMode = new CTutorial;
 		break;
 
 	default:

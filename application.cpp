@@ -36,6 +36,7 @@
 #include "collision.h"
 #include "pause.h"
 #include "tutorial.h"
+#include "joypad.h"
 
 //*****************************************************************************
 // 静的メンバ変数宣言
@@ -55,6 +56,7 @@ CFade *CApplication::m_pFade = nullptr;								// フェードクラス
 CLight *CApplication::m_pLight = nullptr;							// ライトクラス
 CSound *CApplication::m_pSound = nullptr;							// サウンドクラス
 CPause *CApplication::m_pPause = nullptr;							// ポーズクラス
+CJoypad *CApplication::m_pJoy = nullptr;							// ジョイパッドクラス
 int CApplication::m_nPriority = 0;									// プライオリティ番号
 int CApplication::m_nScore = 0;										// 現在のスコア
 bool CApplication::m_bWireFrame = false;							// ワイヤーフレームを使うか
@@ -253,6 +255,7 @@ CApplication::~CApplication()
 	assert(m_pRenderer == nullptr);
 	assert(m_pKeyboard == nullptr);
 	assert(m_pMouse == nullptr);
+	assert(m_pJoy == nullptr);
 	assert(m_pTexture == nullptr);
 	assert(m_pCamera == nullptr); 
 	assert(m_pSound == nullptr);
@@ -275,6 +278,7 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	m_pCamera = new CCamera;
 	m_pMapCamera = new CCamera;
 	m_pSound = new CSound;
+	m_pJoy = new CJoypad;
 
 	// 入力デバイスのメモリ確保
 	m_pKeyboard = new CKeyboard;
@@ -332,6 +336,11 @@ HRESULT CApplication::Init(HINSTANCE hInstance, HWND hWnd)
 	// 初期化処理
 	assert(m_pMouse != nullptr);
 	if (FAILED(m_pMouse->Init(hInstance, m_hWnd)))
+	{
+		return E_FAIL;
+	}
+
+	if (FAILED(m_pJoy->Init(1)))
 	{
 		return E_FAIL;
 	}
@@ -441,6 +450,14 @@ void CApplication::Uninit()
 		m_pSound = nullptr;
 	}
 
+	if (m_pJoy != nullptr)
+	{// 終了処理
+		m_pJoy->Uninit();
+
+		delete m_pJoy;
+		m_pJoy = nullptr;
+	}
+
 	// ライトの解放
 	CLight::ReleaseAll();
 }
@@ -460,6 +477,7 @@ void CApplication::Update()
 
 	m_pKeyboard->Update();
 	m_pMouse->Update();
+	m_pJoy->Update();
 
 	if (!CSuper::GetPause())
 	{
@@ -472,6 +490,7 @@ void CApplication::Update()
 #ifdef _DEBUG
 	CDebugProc::Print("FPS : %d\n", GetFps());
 	CDebugProc::Print("現在のシーン : %d\n", (int)m_mode);
+	CDebugProc::Print("コントローラーの使用数 : %d\n", m_pJoy->GetUseJoyPad());
 
 	if (m_pKeyboard->GetTrigger(DIK_F1))
 	{

@@ -105,7 +105,7 @@ HRESULT CCamera::Init()
 	// 移動クラス(角度)のメモリ確保
 	m_pRoll = new CMove;
 	assert(m_pRoll != nullptr);
-	m_pRoll->SetMoving(0.005f, 5.0f, 0.0f, 0.1f);
+	m_pRoll->SetMoving(0.05f, 5.0f, 0.0f, 0.5f);
 
 	// アスペクト比の設定
 	m_aspect = D3DXVECTOR2((float)CRenderer::SCREEN_WIDTH, (float)CRenderer::SCREEN_HEIGHT);

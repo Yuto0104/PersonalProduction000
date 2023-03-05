@@ -34,6 +34,7 @@ class CFade;
 class CLight;
 class CSound;
 class CPause;
+class CJoypad;
 
 //=============================================================================
 // アプリケーションクラス
@@ -72,7 +73,8 @@ public:
 	static CLight *GetLight() { return m_pLight; }										// ライトの取得
 	static CSound *GetSound() { return m_pSound; }										// サウンドのゲッター
 	static CPause *GetPause() { return m_pPause; }										// ポーズの取得
-	static CSceneMode *GetSceneMode() { return pSceneMode; }
+	static CSceneMode *GetSceneMode() { return pSceneMode; }							// シーンモードの取得
+	static CJoypad *GetJoy() { return m_pJoy; }											// ジョイパッドのゲッター
 	static D3DXVECTOR3 ScreenCastWorld(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static D3DXVECTOR3 WorldCastScreen(const D3DXVECTOR3 &pos);							// ワールド座標をスクリーン座標にキャストする
 	static float RotNormalization(float fRot);											// 角度の設定
@@ -116,6 +118,7 @@ private:
 	static CLight *m_pLight;					// ライトクラス
 	static CSound *m_pSound;					// サウンドクラス
 	static CPause *m_pPause;					// ポーズクラス
+	static CJoypad *m_pJoy;						// ジョイパッドクラス
 	static int m_nPriority;						// プライオリティ番号
 	static int m_nScore;						// 現在のスコア
 	static bool m_bWireFrame;					// ワイヤーフレームを使うか

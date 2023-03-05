@@ -36,6 +36,7 @@
 #include "sound.h"
 #include "scene_mode.h"
 #include "tutorial.h"
+#include "joypad.h"
 
 //--------------------------------------------------------------------
 // 静的メンバ変数の定義
@@ -117,12 +118,12 @@ HRESULT CPlayer::Init()
 	m_pMove->SetMoving(fSPEED, 1000.0f, 0.5f, 0.1f);
 
 	// 軌跡の設定
-	m_pOrbit = COrbit::Create();
+	/*m_pOrbit = COrbit::Create();
 	m_pOrbit->SetMtxParent(GetMtxWorld());
 	m_pOrbit->SetOffset(D3DXVECTOR3(0.0f, 50.0f, 0.0f));
 	m_pOrbit->SetDivision(100);
 	m_pOrbit->SetCol(D3DXCOLOR(1.0f, 0.0f, 0.0f, 0.5f));
-	m_pOrbit->SetBlendMode(COrbit::MODE_ADD);
+	m_pOrbit->SetBlendMode(COrbit::MODE_ADD);*/
 
 	// 3D矩形の当たり判定の設定
 	m_pCollisionRectangle3D = CCollision_Rectangle3D::Create();
@@ -212,6 +213,9 @@ void CPlayer::Update()
 	// マウスの取得
 	CMouse *pMouse = CApplication::GetMouse();
 
+	// コントローラー
+	CJoypad *pJoy = CApplication::GetJoy();
+
 	// モーション情報の取得
 	CMotion *pMotion = CMotionModel3D::GetMotion();
 
@@ -242,13 +246,24 @@ void CPlayer::Update()
 		Attack();
 	}
 
-	if (pKeyboard->GetTrigger(DIK_SPACE))
+	bool bJump = false;
+
+	if (pJoy->GetUseJoyPad() == 0
+		&& pKeyboard->GetTrigger(DIK_SPACE))
 	{// ジャンプ
-		if (m_fGravity == 0.0f)
-		{
-			pSound->PlaySound(CSound::SOUND_LABEL_SE_JUMP000);
-			Jump();
-		}	
+		bJump = true;
+	}
+	else if (pJoy->GetUseJoyPad() > 0
+		&& pJoy->GetTrigger(CJoypad::JOYKEY_A, 0))
+	{
+		bJump = true;
+	}
+
+	if (bJump
+		&& m_fGravity == 0.0f)
+	{
+		pSound->PlaySound(CSound::SOUND_LABEL_SE_JUMP000);
+		Jump();
 	}
 
 	if (m_pWire->GetTargetObjType() == CObject::OBJTYPE_3DMODEL)
@@ -268,8 +283,9 @@ void CPlayer::Update()
 	}
 
 	if (pKeyboard->GetTrigger(DIK_LSHIFT)
-		&& m_pWire->GetWireMode() == CWire::MODE_STOP
-		&& m_fGravity != 0.0f)
+		|| pJoy->GetTrigger(CJoypad::JOYKEY_LEFT_SHOULDER, 0)
+		&& (m_pWire->GetWireMode() == CWire::MODE_STOP
+		&& m_fGravity != 0.0f))
 	{// ワイヤーの射出
 		pSound->PlaySound(CSound::SOUND_LABEL_SE_SHOT000);
 		D3DXVECTOR3 vec = pCamera->GetPosR() - pCamera->GetPosV();
@@ -338,6 +354,7 @@ void CPlayer::Update()
 	Rotate();
 
 	if (pKeyboard->GetRelease(DIK_LSHIFT)
+		|| pJoy->GetTrigger(CJoypad::JOYKEY_LEFT_SHOULDER, 0)
 		&& m_pWire->GetWireMode() == CWire::MODE_HANGING)
 	{
 		Dash();
@@ -618,10 +635,14 @@ D3DXVECTOR3 CPlayer::Move()
 	// モーション情報の取得
 	CMotion *pMotion = CMotionModel3D::GetMotion();
 
-	if (pKeyboard->GetPress(DIK_W)
+	// コントローラー
+	CJoypad *pJoy = CApplication::GetJoy();
+
+	if (pJoy->GetUseJoyPad() == 0
+		&& (pKeyboard->GetPress(DIK_W)
 		|| pKeyboard->GetPress(DIK_A)
 		|| pKeyboard->GetPress(DIK_D)
-		|| pKeyboard->GetPress(DIK_S))
+		|| pKeyboard->GetPress(DIK_S)))
 	{// 移動キーが押された
 		if (pKeyboard->GetPress(DIK_W))
 		{// [W]キーが押された時
@@ -690,6 +711,40 @@ D3DXVECTOR3 CPlayer::Move()
 		{// 移動
 			m_EAction = MOVE_ACTION;
 		
+			if (pMotion != nullptr)
+			{
+				pMotion->SetNumMotion(m_EAction);
+			}
+		}
+	}
+	else if (pJoy->GetUseJoyPad() > 0
+		&& pJoy->Stick(CJoypad::JOYKEY_LEFT_STICK, 0, 0.5f))
+	{
+		// 向きの計算
+		m_rotDest.y = pJoy->GetStickAngle(CJoypad::JOYKEY_LEFT_STICK, 0);
+
+		// カメラ情報の取得
+		CCamera *pCamera = CApplication::GetCamera();
+
+		// 移動方向の算出
+		m_rotDest.y += pCamera->GetRot().y;
+
+		// 移動方向の正規化
+		m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y);
+
+		// 移動量の計算
+		move = D3DXVECTOR3(sinf(m_rotDest.y), 0.0f, cosf(m_rotDest.y));
+
+		// 角度の正規化
+		m_rotDest.y -= D3DX_PI;
+
+		// 移動方向の正規化
+		m_rotDest.y = CCalculation::RotNormalization(m_rotDest.y);
+
+		if (m_EAction == NEUTRAL_ACTION)
+		{// 移動
+			m_EAction = MOVE_ACTION;
+
 			if (pMotion != nullptr)
 			{
 				pMotion->SetNumMotion(m_EAction);
